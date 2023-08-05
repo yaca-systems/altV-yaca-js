@@ -156,7 +156,7 @@ export class YaCAServerModule {
         alt.onClient("server:yaca:addPlayer", this.addNewPlayer.bind(this));
 
         // YaCA: Change megaphone state by player
-        alt.onClient("server:yaca:useMegaphone", this.playerUseMegaPhone.bind(this));
+        alt.onClient("server:yaca:useMegaphone", this.playerUseMegaphone.bind(this));
 
         // YaCA: Triggers if voiceplugin is for x amount of time not connected
         alt.onClient("server:yaca:noVoicePlugin", this.playerNoVoicePlugin.bind(this));
@@ -208,7 +208,7 @@ export class YaCAServerModule {
      * Handle various cases if player left a vehicle.
      */
     handlePlayerLeftVehicle(player: alt.Player, vehicle: alt.Vehicle, seat: number) {
-        YaCAServerModule.changeMegafonState(player, false, true);
+        YaCAServerModule.changeMegaphoneState(player, false, true);
     }
 
     /**
@@ -268,18 +268,18 @@ export class YaCAServerModule {
     /**
      * Apply the megaphone effect on a specific player via client event.
      */
-    playerUseMegaPhone(player: alt.Player, state: boolean) {
+    playerUseMegaphone(player: alt.Player, state: boolean) {
         if (!player.vehicle && !player.hasLocalMeta("canUseMegaphone")) return;
         if (player.vehicle && (!player.vehicle.valid || [1, 2].indexOf(player.seat) == -1)) return;
         if ((!state && !player?.hasStreamSyncedMeta("yaca:megaphoneactive")) || (state && player?.hasStreamSyncedMeta("yaca:megaphoneactive"))) return;
 
-        YaCAServerModule.changeMegafonState(player, state);
+        YaCAServerModule.changeMegaphoneState(player, state);
     }
 
     /**
      * Apply the megaphone effect on a specific player.
      */
-    static changeMegafonState(player: alt.Player, state: boolean, forced: boolean = false) {
+    static changeMegaphoneState(player: alt.Player, state: boolean, forced: boolean = false) {
         if (!state && player.hasStreamSyncedMeta("yaca:megaphoneactive")) {
             player.deleteStreamSyncedMeta("yaca:megaphoneactive");
             if (forced) player.setLocalMeta("lastMegaphoneState", false);
