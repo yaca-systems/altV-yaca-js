@@ -483,6 +483,14 @@ export class YaCAServerModule {
         alt.emitClientRaw(player, "client:yaca:phone", target.id, state);
     }
 
+    // Old phone effect, for something like redm should it be good
+    callPlayerOldEffect(player: alt.Player, target: alt.Player, state: boolean) {
+        if (!player?.valid || !target?.valid) return;
+
+        alt.emitClientRaw(target, "client:yaca:phoneOld", player.id, state);
+        alt.emitClientRaw(player, "client:yaca:phoneOld", target.id, state);
+    }
+
     muteOnPhone(player: alt.Player, state: boolean) {
         if (!player?.valid) return;
 
