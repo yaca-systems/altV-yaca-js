@@ -33,6 +33,7 @@ enum YacaFilterEnum {
     "PHONE" = "PHONE",
     "PHONE_SPEAKER" = "PHONE_SPEAKER",
     "INTERCOM" = "INTERCOM",
+    "PHONE_HISTORICAL" = "PHONE_HISTORICAL",
 }
 
 enum YacaStereoMode {
@@ -498,6 +499,14 @@ export class YaCAClientModule {
             YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE, state);
 
             target.isOnPhone = state;
+        });
+
+        // Old phone effect, for something like redm should it be good
+        alt.onServer("client:yaca:phoneOld", (targetID: number, state: boolean) => {
+            const target = alt.Player.getByRemoteID(targetID);
+            if (!target?.valid) return;
+
+            YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE_HISTORICAL, state);
         });
 
         /* =========== alt:V Events =========== */
