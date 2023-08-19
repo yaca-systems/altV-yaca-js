@@ -33,7 +33,7 @@ enum YacaFilterEnum {
     "PHONE" = "PHONE",
     "PHONE_SPEAKER" = "PHONE_SPEAKER",
     "INTERCOM" = "INTERCOM",
-    "PHONE_OLD" = "PHONE_OLD",
+    "PHONE_HISTORICAL" = "PHONE_HISTORICAL",
 }
 
 enum YacaStereoMode {
@@ -506,7 +506,7 @@ export class YaCAClientModule {
             const target = alt.Player.getByRemoteID(targetID);
             if (!target?.valid) return;
 
-            YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE_OLD, state);
+            YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE_HISTORICAL, state);
         });
 
         /* =========== alt:V Events =========== */
