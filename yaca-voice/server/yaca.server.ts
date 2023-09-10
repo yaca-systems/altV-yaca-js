@@ -17,7 +17,7 @@ declare module "alt-server" {
         };
 
         voiceplugin: {
-            cid: number,
+            clientId: number,
             muted: boolean,
             range: number,
             playerId: number
@@ -343,11 +343,11 @@ export class YaCAServerModule {
     /**
      * Add new player to all other players on connect or reconnect, so they know about some variables.
      */
-    addNewPlayer(player: alt.Player, cid: number) {
-        if (!player?.valid || !cid) return;
+    addNewPlayer(player: alt.Player, clientId: number) {
+        if (!player?.valid || !clientId) return;
 
         player.voiceplugin = {
-            cid: cid,
+            clientId: clientId,
             muted: player.voiceSettings.muted,
             range: player.voiceSettings.voiceRange,
             playerId: player.id

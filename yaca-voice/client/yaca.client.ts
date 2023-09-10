@@ -18,7 +18,7 @@ declare module "alt-client" {
     export interface Player {
         yacaPlugin: {
             radioEnabled: boolean;
-            cid: string,
+            clientId: string,
             muted: boolean,
             range: number,
             phoneCallMemberIds?: number[],
@@ -277,14 +277,14 @@ export class YaCAClientModule {
             if (!Array.isArray(dataObjects)) dataObjects = [dataObjects];
 
             for (const dataObj of dataObjects) {
-                if (!dataObj || typeof dataObj.range == "undefined" || typeof dataObj.cid == "undefined" || typeof dataObj.playerId == "undefined") continue;
+                if (!dataObj || typeof dataObj.range == "undefined" || typeof dataObj.clientId == "undefined" || typeof dataObj.playerId == "undefined") continue;
 
                 const player = alt.Player.getByRemoteID(dataObj.playerId);
                 if (!player?.valid) continue;
 
                 player.yacaPlugin = {
                     radioEnabled: player.yacaPlugin?.radioEnabled || false,
-                    cid: dataObj.cid,
+                    clientId: dataObj.clientId,
                     muted: dataObj.muted,
                     range: dataObj.range,
                     isTalking: false,
@@ -798,7 +798,7 @@ export class YaCAClientModule {
         for (const player of players) {
             if (!player?.valid || !player.yacaPlugin) continue;
 
-            cids.push(player.yacaPlugin.cid);
+            cids.push(player.yacaPlugin.clientId);
         }
 
         if (!cids.length) return;
@@ -921,10 +921,10 @@ export class YaCAClientModule {
             if (!player?.valid || player.remoteId == this.localPlayer.remoteId) continue;
 
             const voiceSetting = player.yacaPlugin;
-            if (!voiceSetting?.cid || voiceSetting.muted) continue;
+            if (!voiceSetting?.clientId || voiceSetting.muted) continue;
 
             players.push({
-                client_id: voiceSetting.cid,
+                client_id: voiceSetting.clientId,
                 position: player.pos,
                 direction: natives.getEntityForwardVector(player),
                 range: voiceSetting.range,
@@ -952,7 +952,7 @@ export class YaCAClientModule {
                     }
 
                     players.push({
-                        client_id: phoneCallMember.yacaPlugin.cid,
+                        client_id: phoneCallMember.yacaPlugin.clientId,
                         position: player.pos,
                         direction: natives.getEntityForwardVector(player),
                         range: settings.maxPhoneSpeakerRange,
