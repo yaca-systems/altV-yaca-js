@@ -19,7 +19,7 @@ declare module "alt-client" {
         yacaPlugin: {
             radioEnabled: boolean;
             clientId: string,
-            muted: boolean,
+            forceMuted: boolean,
             range: number,
             phoneCallMemberIds?: number[],
             isTalking: boolean,
@@ -285,7 +285,7 @@ export class YaCAClientModule {
                 player.yacaPlugin = {
                     radioEnabled: player.yacaPlugin?.radioEnabled || false,
                     clientId: dataObj.clientId,
-                    muted: dataObj.muted,
+                    forceMuted: dataObj.forceMuted,
                     range: dataObj.range,
                     isTalking: false,
                     phoneCallMemberIds: player.yacaPlugin?.phoneCallMemberIds || undefined,
@@ -295,7 +295,7 @@ export class YaCAClientModule {
 
         alt.onServer("client:yaca:muteTarget", (target: number, muted: boolean) => {
             const player = alt.Player.getByRemoteID(target)
-            if (player?.valid && player.yacaPlugin) player.yacaPlugin.muted = muted;
+            if (player?.valid && player.yacaPlugin) player.yacaPlugin.forceMuted = muted;
         });
 
         alt.onServer("client:yaca:changeVoiceRange", (target: number, range: number) => {
@@ -921,7 +921,7 @@ export class YaCAClientModule {
             if (!player?.valid || player.remoteId == this.localPlayer.remoteId) continue;
 
             const voiceSetting = player.yacaPlugin;
-            if (!voiceSetting?.clientId || voiceSetting.muted) continue;
+            if (!voiceSetting?.clientId || voiceSetting.forceMuted) continue;
 
             players.push({
                 client_id: voiceSetting.clientId,
@@ -944,7 +944,7 @@ export class YaCAClientModule {
                     if (!phoneCallMember?.valid) continue;
 
                     if (phoneCallMember.hasSyncedMeta("yaca:isMutedOnPhone")
-                        || phoneCallMember.yacaPlugin?.muted
+                        || phoneCallMember.yacaPlugin?.forceMuted
                         || this.localPlayer.pos.distanceTo(player.pos) > settings.maxPhoneSpeakerRange
                     ) {
                         if (!applyPhoneSpeaker.has(phoneCallMember)) phoneSpeakerRemove.add(phoneCallMember);

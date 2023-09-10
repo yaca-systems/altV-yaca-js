@@ -12,13 +12,13 @@ declare module "alt-server" {
             voiceRange: number,
             voiceFirstConnect: boolean,
             maxVoiceRangeInMeter: number,
-            muted: boolean,
+            forceMuted: boolean,
             ingameName: string,
         };
 
         voiceplugin: {
             clientId: number,
-            muted: boolean,
+            forceMuted: boolean,
             range: number,
             playerId: number
         }
@@ -122,7 +122,7 @@ export class YaCAServerModule {
             voiceRange: 3,
             voiceFirstConnect: false,
             maxVoiceRangeInMeter: 15,
-            muted: false,
+            forceMuted: false,
             ingameName: name,
         };
 
@@ -259,10 +259,10 @@ export class YaCAServerModule {
     static changePlayerAliveStatus(player: alt.Player, alive: boolean) {
         if (!player.states.isAlive && alive) return;
 
-        player.voiceSettings.muted = !alive;
+        player.voiceSettings.forceMuted = !alive;
         alt.emitAllClientsRaw("client:yaca:muteTarget", player.id, !alive);
 
-        if (player.voiceplugin) player.voiceplugin.muted = !alive;
+        if (player.voiceplugin) player.voiceplugin.forceMuted = !alive;
     }
 
     /**
@@ -348,7 +348,7 @@ export class YaCAServerModule {
 
         player.voiceplugin = {
             clientId: clientId,
-            muted: player.voiceSettings.muted,
+            forceMuted: player.voiceSettings.forceMuted,
             range: player.voiceSettings.voiceRange,
             playerId: player.id
         };
