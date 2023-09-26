@@ -889,18 +889,18 @@ export class YaCAClientModule {
      * Handle the talk & mute state from teamspeak, display it in ui and sync lip to other players.
      */
     handleTalkState(payload: YacaResponse) {
-        const isTalking = !!parseInt(payload.message);
-
+        
         // Update state if player is muted or not
         if (payload.code === "MUTE_STATE") {
             this.isPlayerMuted = !!parseInt(payload.message);
             this.webview.emit('webview:hud:voiceDistance', this.isPlayerMuted ? 0 : voiceRangesEnum[this.uirange]);
         }
-
+        
+        const isTalking = !this.isPlayerMuted && !!parseInt(payload.message);
         if (this.isTalking != isTalking) {
             this.isTalking = isTalking;
 
-            if (payload.code !== "MUTE_STATE") this.webview.emit('webview:hud:isTalking', isTalking);
+            this.webview.emit('webview:hud:isTalking', isTalking);
 
             // TODO: Deprecated if alt:V syncs the playFacialAnim native
             const playerIdsNear = this.getAllPlayersInStreamingRange(40).map(p => p.player.remoteId);
