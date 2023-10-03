@@ -727,7 +727,7 @@ export class YaCAClientModule {
         player.yacaPlugin[variable] = value;
     }
 
-    changeVoiceRange(toggel: number) {
+    changeVoiceRange(toggle: number) {
         if (!this.localPlayer.yacaPluginLocal.canChangeVoiceRange) return false;
 
         if (this.visualVoiceRangeTimeout) {
@@ -740,7 +740,7 @@ export class YaCAClientModule {
             this.visualVoiceRangeTick = null;
         }
 
-        this.uirange += toggel;
+        this.uirange += toggle;
 
         if (this.uirange < 1) {
             this.uirange = 1;
