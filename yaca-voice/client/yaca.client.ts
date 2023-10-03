@@ -543,7 +543,7 @@ export class YaCAClientModule {
                     delete entity.yacaPlugin.phoneCallMemberIds;
                 } else {
                     if (oldValue && newValue) this.removePhoneSpeakerFromEntity(entity);
-                    this.setPlayerVariable(entity, "phoneCallMemberIds", newValue);
+                    this.setPlayerVariable(entity, "phoneCallMemberIds", Array.isArray(newValue) ? newValue : [newValue]);
                 }
                 return;
             }
@@ -572,7 +572,9 @@ export class YaCAClientModule {
 
             // Handle phonecallspeaker on stream-in
             if (entity?.valid && entity.hasStreamSyncedMeta("yaca:phoneSpeaker")) {
-                this.setPlayerVariable(entity, "phoneCallMemberIds", entity.getStreamSyncedMeta("yaca:phoneSpeaker") as number[]);
+                const value = entity.getStreamSyncedMeta("yaca:phoneSpeaker");
+
+                this.setPlayerVariable(entity, "phoneCallMemberIds", Array.isArray(value) ? value : [value]);
             }
 
             // Handle shortrange radio on stream-in
