@@ -918,6 +918,7 @@ export class YaCAClientModule {
         const players: any = [];
         const allPlayers = alt.Player.streamedIn;
         const localPos = this.localPlayer.pos;
+        const currentRoom = natives.getRoomKeyFromEntity(this.localPlayer);
 
         for (const player of allPlayers) {
             if (!player?.valid || player.remoteId == this.localPlayer.remoteId) continue;
@@ -925,14 +926,18 @@ export class YaCAClientModule {
             const voiceSetting = player.yacaPlugin;
             if (!voiceSetting?.clientId || voiceSetting.forceMuted) continue;
 
+            let muffleIntensity = 0;
+            if (currentRoom != natives.getRoomKeyFromEntity(player) && !natives.hasEntityClearLosToEntity(this.localPlayer, player, 17)) {
+                muffleIntensity = 10; // 10 is the maximum intensity
+            }
+
             players.push({
                 client_id: voiceSetting.clientId,
                 position: player.pos,
                 direction: natives.getEntityForwardVector(player),
                 range: voiceSetting.range,
-                room: natives.getRoomKeyFromEntity(player),
                 is_underwater: natives.isPedSwimmingUnderWater(player),
-                intersect: natives.hasEntityClearLosToEntity(this.localPlayer, player, 17)
+                muffle_intensity: muffleIntensity
             });
 
             // Phone speaker handling.
@@ -958,9 +963,7 @@ export class YaCAClientModule {
                         position: player.pos,
                         direction: natives.getEntityForwardVector(player),
                         range: settings.maxPhoneSpeakerRange,
-                        room: natives.getRoomKeyFromEntity(player),
-                        is_underwater: natives.isPedSwimmingUnderWater(player),
-                        intersect: natives.hasEntityClearLosToEntity(this.localPlayer, player, 17)
+                        is_underwater: natives.isPedSwimmingUnderWater(player)
                     });
 
                     if (phoneSpeakerRemove.has(phoneCallMember)) phoneSpeakerRemove.delete(phoneCallMember)
@@ -978,7 +981,6 @@ export class YaCAClientModule {
             player: {
                 player_direction: this.getCamDirection(),
                 player_position: localPos,
-                player_room: natives.getRoomKeyFromEntity(this.localPlayer),
                 player_is_underwater: natives.isPedSwimmingUnderWater(this.localPlayer),
                 players_list: players
             }
