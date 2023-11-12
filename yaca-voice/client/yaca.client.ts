@@ -42,6 +42,11 @@ enum YacaStereoMode {
     "STEREO" = "STEREO",
 }
 
+enum YacaBuildType {
+    "RELEASE" = 0,
+    "DEVELOP" = 1
+}
+
 interface YacaResponse {
     code: "RENAME_CLIENT" | "MOVE_CLIENT" | "MUTE_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT";
     requestType: string;
@@ -640,7 +645,8 @@ export class YaCAClientModule {
              * if the value is set to -1, the player voice range is taken
              * if the value is >= 0, you can set the max muffling range before it gets completely cut off
              */
-            muffling_range: 2
+            muffling_range: 2,
+            build_type: 0 // 0 = Release, 1 = Debug
         });
     }
 
