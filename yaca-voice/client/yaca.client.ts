@@ -299,7 +299,7 @@ export class YaCAClientModule {
         });
 
         alt.onServer("client:yaca:changeVoiceRange", (target: number, range: number) => {
-            if (target == this.localPlayer.remoteId && !this.isPlayerMuted) {
+            if (target == this.localPlayer.remoteID && !this.isPlayerMuted) {
                 this.webview.emit('webview:hud:voiceDistance', range);
             }
 
@@ -374,19 +374,19 @@ export class YaCAClientModule {
             const channel = this.findRadioChannelByFrequency(frequency);
             if (!channel) return;
 
-            const info = infos[this.localPlayer.remoteId];
+            const info = infos[this.localPlayer.remoteID];
 
             if (!info?.shortRange || (info?.shortRange && player.isSpawned)) {
                 YaCAClientModule.setPlayersCommType(player, YacaFilterEnum.RADIO, state, channel);
             }
 
-            state ? this.playersInRadioChannel.get(channel)?.add(player.remoteId) : this.playersInRadioChannel.get(channel)?.delete(player.remoteId);
+            state ? this.playersInRadioChannel.get(channel)?.add(player.remoteID) : this.playersInRadioChannel.get(channel)?.delete(player.remoteID);
 
             if (info?.shortRange || !state) {
                 if (state) {
-                    this.playersWithShortRange.set(player.remoteId, frequency)
+                    this.playersWithShortRange.set(player.remoteID, frequency)
                 } else {
-                    this.playersWithShortRange.delete(player.remoteId)
+                    this.playersWithShortRange.delete(player.remoteID)
                 }
             }
         });
@@ -552,7 +552,7 @@ export class YaCAClientModule {
         alt.on("gameEntityCreate", (entity) => {
             if (!entity?.valid || !(entity instanceof alt.Player)) return;
 
-            const entityID = entity.remoteId;
+            const entityID = entity.remoteID;
 
             // Handle megaphone on stream-in
             if (entity?.valid && entity.hasStreamSyncedMeta("yaca:megaphoneactive")) {
@@ -589,7 +589,7 @@ export class YaCAClientModule {
         alt.on("gameEntityDestroy", (entity) => {
             if (!entity?.valid || !(entity instanceof alt.Player)) return;
 
-            const entityID = entity.remoteId;
+            const entityID = entity.remoteID;
 
             // Handle phonecallspeaker on stream-out
             if (entity.yacaPlugin?.phoneCallMemberIds) {
@@ -905,7 +905,7 @@ export class YaCAClientModule {
             this.webview.emit('webview:hud:isTalking', isTalking);
 
             // TODO: Deprecated if alt:V syncs the playFacialAnim native
-            const playerIdsNear = this.getAllPlayersInStreamingRange(40).map(p => p.player.remoteId);
+            const playerIdsNear = this.getAllPlayersInStreamingRange(40).map(p => p.player.remoteID);
             this.syncLipsPlayer(this.localPlayer, isTalking)
             if (playerIdsNear.length) alt.emitServerUnreliable("server:yaca:lipsync", isTalking, playerIdsNear)
         }
@@ -921,7 +921,7 @@ export class YaCAClientModule {
         const currentRoom = natives.getRoomKeyFromEntity(this.localPlayer);
 
         for (const player of allPlayers) {
-            if (!player?.valid || player.remoteId == this.localPlayer.remoteId) continue;
+            if (!player?.valid || player.remoteID == this.localPlayer.remoteID) continue;
 
             const voiceSetting = player.yacaPlugin;
             if (!voiceSetting?.clientId || voiceSetting.forceMuted) continue;
@@ -1074,7 +1074,7 @@ export class YaCAClientModule {
             if (!player?.valid) continue;
 
             targets.push(player);
-            players.delete(player.remoteId);
+            players.delete(player.remoteID);
         }
 
         if (targets.length) YaCAClientModule.setPlayersCommType(targets, YacaFilterEnum.RADIO, false, channel);
