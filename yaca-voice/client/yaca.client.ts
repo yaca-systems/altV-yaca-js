@@ -355,13 +355,7 @@ export class YaCAClientModule {
         });
 
         alt.onServer("client:yaca:setRadioFreq", (channel, frequency) => {
-            this.radioFrequenceSetted = true;
-
-            if (this.radioChannelSettings[channel].frequency != frequency) {
-                this.disableRadioFromPlayerInChannel(channel);
-            }
-
-            this.radioChannelSettings[channel].frequency = frequency;
+            this.setRadioFrequency(channel, frequency);
         });
 
         alt.onServer("client:yaca:radioTalking", (target, frequency, state, infos) => {
@@ -403,6 +397,23 @@ export class YaCAClientModule {
             this.radioChannelSettings[channel].muted = state;
             this.updateRadioInWebview(channel);
             this.disableRadioFromPlayerInChannel(channel);
+        });
+
+        alt.onServer("client:yaca:leaveRadioChannel", (client_ids, frequency) => {
+            if (!Array.isArray(client_ids)) client_ids = [client_ids];
+
+            const channel = this.findRadioChannelByFrequency(frequency);
+
+            if (client_ids.includes(this.localPlayer.yacaPlugin.clientId)) this.setRadioFrequency(channel, 0);
+
+            this.sendWebsocket({
+                base: {"request_type": "INGAME"},
+                comm_device_left: {
+                    comm_type: YacaFilterEnum.RADIO,
+                    client_ids: client_ids,
+                    channel: channel
+                }
+            });
         });
 
         this.webview.on('client:yaca:changeActiveRadioChannel', (channel) => {
@@ -1057,6 +1068,16 @@ export class YaCAClientModule {
         }
 
         return foundChannel;
+    }
+
+    setRadioFrequency(channel, frequency) {
+        this.radioFrequenceSetted = true;
+
+        if (this.radioChannelSettings[channel].frequency != frequency) {
+            this.disableRadioFromPlayerInChannel(channel);
+        }
+
+        this.radioChannelSettings[channel].frequency = frequency;
     }
 
     /**

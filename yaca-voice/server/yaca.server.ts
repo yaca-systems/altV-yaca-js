@@ -388,6 +388,10 @@ export class YaCAServerModule {
         // Leave radiochannel if frequency is 0
         if (frequency == "0") return YaCAServerModule.getInstance().leaveRadioFrequency(player, channel, frequency);
 
+        if (player.radioSettings.frequencies[channel] != frequency){
+            YaCAServerModule.getInstance().leaveRadioFrequency(player, channel, player.radioSettings.frequencies[channel]);
+        }
+
         // Add player to channel map, so we know who is in which channel
         if (!YaCAServerModule.radioFrequencyMap.has(frequency)) YaCAServerModule.radioFrequencyMap.set(frequency, new Map());
         YaCAServerModule.radioFrequencyMap.get(frequency).set(player.id, { muted: false });
@@ -408,12 +412,21 @@ export class YaCAServerModule {
 
         if (!YaCAServerModule.radioFrequencyMap.has(frequency)) return;
 
-        YaCAServerModule.radioFrequencyMap.get(frequency).delete(player.id);
+        const allPlayersInChannel = YaCAServerModule.radioFrequencyMap.get(frequency);
 
         player.radioSettings.frequencies[channel] = "0";
 
-        player.emitRaw("client:yaca:setRadioFreq", channel, 0)
+        let players = [];
+        for (const [key, value] of allPlayersInChannel) {
+            const target = alt.Player.getByID(key)
+            if (!target?.valid) continue;
 
+            players.push(target);
+        }
+
+        if (players.length) alt.emitClientRaw(players, "client:yaca:leaveRadioChannel", player.voiceplugin.clientId, frequency);
+
+        allPlayersInChannel.delete(player.id);
         if (!YaCAServerModule.radioFrequencyMap.get(frequency).size) YaCAServerModule.radioFrequencyMap.delete(frequency)
     }
 
