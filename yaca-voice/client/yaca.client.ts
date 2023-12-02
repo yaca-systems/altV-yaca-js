@@ -321,14 +321,6 @@ export class YaCAClientModule {
             }
         });
 
-        alt.onServer('client:yaca:lipsync', (id: number, isTalking: boolean) => {
-            const player = alt.Player.getByRemoteID(id);
-
-            if (!player?.valid || !player.isSpawned) return;
-
-            this.syncLipsPlayer(player, isTalking);
-        });
-
         /* =========== RADIO SYSTEM =========== */
         this.webview.on('client:yaca:enableRadio', (state) => {
             if (!this.isPluginInitialized()) return;
@@ -563,6 +555,11 @@ export class YaCAClientModule {
                 }
                 return;
             }
+
+            if (key == "yaca:lipsync") {
+                this.syncLipsPlayer(entity, !!newValue);
+                return;
+            }
         });
 
         alt.on("gameEntityCreate", (entity) => {
@@ -599,6 +596,10 @@ export class YaCAClientModule {
                 if (channel) {
                     YaCAClientModule.setPlayersCommType(entity, YacaFilterEnum.RADIO, true, channel);
                 }
+            }
+
+            if (entity?.valid) {
+                this.syncLipsPlayer(entity, !!entity.getStreamSyncedMeta("yaca:lipsync"));
             }
         });
 
@@ -922,9 +923,7 @@ export class YaCAClientModule {
             this.webview.emit('webview:hud:isTalking', isTalking);
 
             // TODO: Deprecated if alt:V syncs the playFacialAnim native
-            const playerIdsNear = this.getAllPlayersInStreamingRange(40).map(p => p.player.remoteID);
-            this.syncLipsPlayer(this.localPlayer, isTalking)
-            if (playerIdsNear.length) alt.emitServerUnreliable("server:yaca:lipsync", isTalking, playerIdsNear)
+            alt.emitServerRaw("server:yaca:lipsync", isTalking)
         }
     }
 

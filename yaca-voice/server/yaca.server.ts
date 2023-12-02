@@ -147,9 +147,8 @@ export class YaCAServerModule {
         alt.onClient("server:yaca:changeVoiceRange", this.changeVoiceRange.bind(this));
 
         // YACA: Playerlipsync
-        alt.onClient("server:yaca:lipsync", (player, state, players: number[]) => {
-            const playersToSend = alt.Player.all.filter(p => p.valid && players.includes(p.id));
-            if (playersToSend.length) alt.emitClientUnreliable(playersToSend, "client:yaca:lipsync", player.id, state);
+        alt.onClient("server:yaca:lipsync", (player, state) => {
+            player.setStreamSyncedMeta("yaca:lipsync", state);
         });
 
         // YaCA:successful voice connection and client-id sync
