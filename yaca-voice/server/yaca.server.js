@@ -1,5 +1,7 @@
 import * as alt from 'alt-server';
 
+//For typescript users
+/*
 declare module "alt-server" {
     export interface Colshape {
         voiceRangeInfos: {
@@ -31,6 +33,7 @@ declare module "alt-server" {
         };
     }
 }
+*/
 
 const settings = {
     // Max Radio Channels
@@ -49,7 +52,14 @@ const settings = {
     DEFAULT_CHANNEL_ID: 1
 }
 
-function generateRandomString(length: number = 50, possible: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") {
+/**
+ * Generates a random string of a given length.
+ *
+ * @param {number} [length=50] - The length of the string to generate. Defaults to 50 if not provided.
+ * @param {string} [possible="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"] - The characters to use in the string. Defaults to all alphanumeric characters if not provided.
+ * @returns {string} The generated random string.
+ */
+function generateRandomString(length = 50, possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") {
     let text = "";
     for (let i = 0; i < length; i++)
         text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -58,7 +68,7 @@ function generateRandomString(length: number = 50, possible: string = "ABCDEFGHI
 }
 
 export class YaCAServerModule {
-    static instance: YaCAServerModule;
+    static instance;
     static nameSet = new Set();
     static voiceRangesColShapes = new Map();
 
@@ -79,10 +89,12 @@ export class YaCAServerModule {
         YaCAServerModule.voiceRangesColShapes.set(1337, colshape)
     }
 
-    /***
+    /**
      * Gets the singleton of YaCAServerModule.
+     *
+     * @returns {YaCAServerModule} The singleton instance of YaCAServerModule.
      */
-    static getInstance(): YaCAServerModule {
+    static getInstance() {
         if (!this.instance) {
             this.instance = new YaCAServerModule();
         }
@@ -91,9 +103,11 @@ export class YaCAServerModule {
     }
 
     /**
-     * Generate a random name on and insert it into the database.
+     * Generate a random name and insert it into the database.
+     *
+     * @param {alt.Player} player - The player for whom to generate a random name.
      */
-    generateRandomName(player: alt.Player) {
+    generateRandomName(player) {
         let name;
         for (let i = 0; i < 100; i++) {
             let generatedName = generateRandomString(15, "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789");
@@ -111,8 +125,10 @@ export class YaCAServerModule {
 
     /**
      * Initialize the player on first connect.
+     *
+     * @param {alt.Player} player - The player to connect to voice.
      */
-    connectToVoice(player: alt.Player) {
+    connectToVoice(player) {
         if (!player?.valid) return;
 
         const name = this.generateRandomName(player);
@@ -127,10 +143,10 @@ export class YaCAServerModule {
         };
 
         player.radioSettings = {
-            activated: false as boolean,
-            currentChannel: 1 as number,
-            hasLong: false as boolean,
-            frequencies: {} as { [key: number]: string }
+            activated: false,
+            currentChannel: 1,
+            hasLong: false,
+            frequencies: {} //{ [key: number]: string }
         };
 
         this.connect(player);
@@ -191,8 +207,10 @@ export class YaCAServerModule {
 
     /**
      * Handle various cases if player disconnects.
+     *
+     * @param {alt.Player} player - The player who disconnected.
      */
-    handlePlayerDisconnect(player: alt.Player) {
+    handlePlayerDisconnect(player) {
         const playerID = player.id;
         YaCAServerModule.nameSet.delete(player.voiceSettings?.ingameName);
 
@@ -205,15 +223,22 @@ export class YaCAServerModule {
 
     /**
      * Handle various cases if player left a vehicle.
+     *
+     * @param {alt.Player} player - The player who left the vehicle.
+     * @param {alt.Vehicle} vehicle - The vehicle that the player left.
+     * @param {number} seat - The seat number that the player was in.
      */
-    handlePlayerLeftVehicle(player: alt.Player, vehicle: alt.Vehicle, seat: number) {
+    handlePlayerLeftVehicle(player, vehicle, seat) {
         YaCAServerModule.changeMegaphoneState(player, false, true);
     }
 
     /**
-     * Handle various cases if player enteres colshapes.
+     * Handle various cases if player enters colshapes.
+     *
+     * @param {alt.Colshape} colshape - The colshape that the entity entered.
+     * @param {alt.Entity} entity - The entity that entered the colshape.
      */
-    handleEntityEnterColshape(colshape: alt.Colshape, entity: alt.Entity) {
+    handleEntityEnterColshape(colshape, entity) {
         if (!colshape.voiceRangeInfos || !(entity instanceof alt.Player) || !entity?.valid) return;
 
         const voiceRangeInfos = colshape.voiceRangeInfos;
@@ -239,8 +264,11 @@ export class YaCAServerModule {
 
     /**
      * Handle various cases if player leaves colshapes.
+     *
+     * @param {alt.Colshape} colshape - The colshape that the entity left.
+     * @param {alt.Entity} entity - The entity that left the colshape.
      */
-    handleEntityLeaveColshape(colshape: alt.Colshape, entity: alt.Entity) {
+    handleEntityLeaveColshape(colshape, entity) {
         if (!colshape.voiceRangeInfos || !(entity instanceof alt.Player) || !entity?.valid) return;
 
         entity.voiceSettings.maxVoiceRangeInMeter = 15;
@@ -253,9 +281,12 @@ export class YaCAServerModule {
     };
 
     /**
-     * Syncs player alive status and mute him if he is dead or what ever.
+     * Syncs player alive status and mute him if he is dead or whatever.
+     *
+     * @param {alt.Player} player - The player whose alive status is to be changed.
+     * @param {boolean} alive - The new alive status.
      */
-    static changePlayerAliveStatus(player: alt.Player, alive: boolean) {
+    static changePlayerAliveStatus(player, alive) {
         if (!player.states.isAlive && alive) return;
 
         player.voiceSettings.forceMuted = !alive;
@@ -266,8 +297,11 @@ export class YaCAServerModule {
 
     /**
      * Apply the megaphone effect on a specific player via client event.
+     *
+     * @param {alt.Player} player - The player to apply the megaphone effect on.
+     * @param {boolean} state - The state of the megaphone effect.
      */
-    playerUseMegaphone(player: alt.Player, state: boolean) {
+    playerUseMegaphone(player, state) {
         if (!player.vehicle && !player.hasLocalMeta("canUseMegaphone")) return;
         if (player.vehicle && (!player.vehicle.valid || [1, 2].indexOf(player.seat) == -1)) return;
         if ((!state && !player?.hasStreamSyncedMeta("yaca:megaphoneactive")) || (state && player?.hasStreamSyncedMeta("yaca:megaphoneactive"))) return;
@@ -277,8 +311,12 @@ export class YaCAServerModule {
 
     /**
      * Apply the megaphone effect on a specific player.
+     *
+     * @param {alt.Player} player - The player to apply the megaphone effect on.
+     * @param {boolean} state - The state of the megaphone effect.
+     * @param {boolean} [forced=false] - Whether the change is forced. Defaults to false if not provided.
      */
-    static changeMegaphoneState(player: alt.Player, state: boolean, forced: boolean = false) {
+    static changeMegaphoneState(player, state, forced = false) {
         if (!state && player.hasStreamSyncedMeta("yaca:megaphoneactive")) {
             player.deleteStreamSyncedMeta("yaca:megaphoneactive");
             if (forced) player.setLocalMeta("lastMegaphoneState", false);
@@ -288,16 +326,21 @@ export class YaCAServerModule {
     }
 
     /**
-     * Kick player if he doesnt have the voice plugin activated.
+     * Kick player if he doesn't have the voice plugin activated.
+     *
+     * @param {alt.Player} player - The player to check for the voice plugin.
      */
-    playerNoVoicePlugin(player: alt.Player) {
+    playerNoVoicePlugin(player) {
         if (player?.valid) player.kick("Dein Voiceplugin war nicht aktiviert!");
     }
 
     /**
      * Used if a player reconnects to the server.
+     *
+     * @param {alt.Player} player - The player who reconnected.
+     * @param {boolean} isFirstConnect - Whether this is the player's first connection.
      */
-    playerReconnect(player: alt.Player, isFirstConnect: boolean) {
+    playerReconnect(player, isFirstConnect) {
         if (!player?.valid || !player.voiceSettings.voiceFirstConnect) return;
 
         if (!isFirstConnect) {
@@ -313,8 +356,11 @@ export class YaCAServerModule {
 
     /**
      * Change the voice range of a player.
+     *
+     * @param {alt.Player} player - The player whose voice range is to be changed.
+     * @param {number} range - The new voice range.
      */
-    changeVoiceRange(player: alt.Player, range: number) {
+    changeVoiceRange(player, range) {
         // Sanitycheck to prevent hackers or shit
         if (player.voiceSettings.maxVoiceRangeInMeter < range) return player.emitRaw("client:yaca:setMaxVoiceRange", 15);
 
@@ -325,9 +371,11 @@ export class YaCAServerModule {
     }
 
     /**
-     * sends initial data needed to connect to teamspeak plugin.
+     * Sends initial data needed to connect to teamspeak plugin.
+     *
+     * @param {alt.Player} player - The player to connect.
      */
-    connect(player: alt.Player) {
+    connect(player) {
         player.voiceSettings.voiceFirstConnect = true;
 
         player.emitRaw("client:yaca:init", {
@@ -341,8 +389,11 @@ export class YaCAServerModule {
 
     /**
      * Add new player to all other players on connect or reconnect, so they know about some variables.
+     *
+     * @param {alt.Player} player - The player to add.
+     * @param {number} clientId - The client ID of the player.
      */
-    addNewPlayer(player: alt.Player, clientId: number) {
+    addNewPlayer(player, clientId) {
         if (!player?.valid || !clientId) return;
 
         player.voiceplugin = {
@@ -366,11 +417,22 @@ export class YaCAServerModule {
     }
 
     /* ======================== RADIO SYSTEM ======================== */
-    static isLongRadioPermitted(player: alt.Player) {
+    /**
+     * Checks if a player is permitted to use long radio.
+     *
+     * @param {alt.Player} player - The player to check.
+     */
+    static isLongRadioPermitted(player) {
         player.radioSettings.hasLong = true //Add some checks if you want shortrange system;
     }
 
-    enableRadio(player: alt.Player, state: boolean) {
+    /**
+     * Enable or disable the radio for a player.
+     *
+     * @param {alt.Player} player - The player to enable or disable the radio for.
+     * @param {boolean} state - The new state of the radio.
+     */
+    enableRadio(player, state) {
         if (!player?.valid) return;
 
         player.radioSettings.activated = state;
@@ -379,7 +441,14 @@ export class YaCAServerModule {
         player.setStreamSyncedMeta('yaca:radioEnabled', state);
     }
 
-    changeRadioFrequency(player: alt.Player, channel: number, frequency: string) {
+    /**
+     * Change the radio frequency for a player.
+     *
+     * @param {alt.Player} player - The player to change the radio frequency for.
+     * @param {number} channel - The channel to change the frequency of.
+     * @param {string} frequency - The new frequency.
+     */
+    changeRadioFrequency(player, channel, frequency) {
         if (!player?.valid) return;
         if (!player.radioSettings.activated) return player.sendMessage("Das Funkgerät ist aus!");
         if (isNaN(channel) || channel < 1 || channel > settings.maxRadioChannels) return player.sendMessage("Fehlerhafter Funk Kanal!");
@@ -404,7 +473,14 @@ export class YaCAServerModule {
         // if (newPlayers.length) alt.emitClientRaw(newPlayers, "client:yaca:setRadioEffectInFrequency", frequency, player.id);
     }
 
-    leaveRadioFrequency(player: alt.Player, channel: number, frequency: string) {
+    /**
+     * Make a player leave a radio frequency.
+     *
+     * @param {alt.Player} player - The player to make leave the radio frequency.
+     * @param {number} channel - The channel to leave.
+     * @param {string} frequency - The frequency to leave.
+     */
+    leaveRadioFrequency(player, channel, frequency) {
         if (!player?.valid) return;
 
         frequency = frequency == "0" ? player.radioSettings.frequencies[channel] : frequency;
@@ -429,7 +505,13 @@ export class YaCAServerModule {
         if (!YaCAServerModule.radioFrequencyMap.get(frequency).size) YaCAServerModule.radioFrequencyMap.delete(frequency)
     }
 
-    radioChannelMute(player: alt.Player, channel: number) {
+    /**
+     * Mute a radio channel for a player.
+     *
+     * @param {alt.Player} player - The player to mute the radio channel for.
+     * @param {number} channel - The channel to mute.
+     */
+    radioChannelMute(player, channel) {
         if (!player?.valid) return;
 
         const radioFrequency = player.radioSettings.frequencies[channel];
@@ -440,13 +522,25 @@ export class YaCAServerModule {
         player.emitRaw("client:yaca:setRadioMuteState", channel, foundPlayer.muted)
     }
 
-    radioActiveChannelChange(player: alt.Player, channel: number) {
+    /**
+     * Change the active radio channel for a player.
+     *
+     * @param {alt.Player} player - The player to change the active radio channel for.
+     * @param {number} channel - The new active channel.
+     */
+    radioActiveChannelChange(player, channel) {
         if (!player?.valid || isNaN(channel) || channel < 1 || channel > settings.maxRadioChannels) return;
 
         player.radioSettings.currentChannel = channel;
     }
 
-    radioTalkingState(player: alt.Player, state: boolean) {
+    /**
+     * Change the talking state of a player on the radio.
+     *
+     * @param {alt.Player} player - The player to change the talking state for.
+     * @param {boolean} state - The new talking state.
+     */
+    radioTalkingState(player, state) {
         if (!player?.valid) return;
         if (!player.radioSettings.activated) return;
 
@@ -456,8 +550,8 @@ export class YaCAServerModule {
         const playerID = player.id;
 
         const getPlayers = YaCAServerModule.radioFrequencyMap.get(radioFrequency);
-        let targets: alt.Player[] = [];
-        let radioInfos = {} as { [key: number]: { shortRange: boolean }};
+        let targets = [];
+        let radioInfos = {} //as { [key: number]: { shortRange: boolean }};
         for (const [key, values] of getPlayers) {
             if (values.muted) {
                 if (key == player.id) {
@@ -488,22 +582,41 @@ export class YaCAServerModule {
     };
 
     /* ======================== PHONE SYSTEM ======================== */
-    callPlayer(player: alt.Player, target: alt.Player, state: boolean) {
+    /**
+     * Call another player.
+     *
+     * @param {alt.Player} player - The player who is making the call.
+     * @param {alt.Player} target - The player who is being called.
+     * @param {boolean} state - The state of the call.
+     */
+    callPlayer(player, target, state) {
         if (!player?.valid || !target?.valid) return;
 
         alt.emitClientRaw(target, "client:yaca:phone", player.id, state);
         alt.emitClientRaw(player, "client:yaca:phone", target.id, state);
     }
 
-    // Old phone effect, for something like redm should it be good
-    callPlayerOldEffect(player: alt.Player, target: alt.Player, state: boolean) {
+    /**
+     * Apply the old effect to a player during a call.
+     *
+     * @param {alt.Player} player - The player to apply the old effect to.
+     * @param {alt.Player} target - The player on the other end of the call.
+     * @param {boolean} state - The state of the call.
+     */
+    callPlayerOldEffect(player, target, state) {
         if (!player?.valid || !target?.valid) return;
 
         alt.emitClientRaw(target, "client:yaca:phoneOld", player.id, state);
         alt.emitClientRaw(player, "client:yaca:phoneOld", target.id, state);
     }
 
-    muteOnPhone(player: alt.Player, state: boolean) {
+    /**
+     * Mute a player during a phone call.
+     *
+     * @param {alt.Player} player - The player to mute.
+     * @param {boolean} state - The mute state.
+     */
+    muteOnPhone(player, state) {
         if (!player?.valid) return;
 
         if (state) {
@@ -513,7 +626,14 @@ export class YaCAServerModule {
         }
     }
 
-    enablePhoneSpeaker(player: alt.Player, state: boolean, phoneCallMemberIds: number[]) {
+    /**
+     * Enable or disable the phone speaker for a player.
+     *
+     * @param {alt.Player} player - The player to enable or disable the phone speaker for.
+     * @param {boolean} state - The state of the phone speaker.
+     * @param {number[]} phoneCallMemberIds - The IDs of the members in the phone call.
+     */
+    enablePhoneSpeaker(player, state, phoneCallMemberIds) {
         if (!player?.valid) return;
 
         if (state) {
