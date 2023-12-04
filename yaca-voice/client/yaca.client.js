@@ -1023,7 +1023,7 @@ export class YaCAClientModule {
             if (!player?.valid || player.remoteID == this.localPlayer.remoteID) continue;
 
             const voiceSetting = player.yacaPlugin;
-            if (!voiceSetting?.clientId || voiceSetting.forceMuted) continue;
+            if (!voiceSetting?.clientId) continue;
 
             let muffleIntensity = 0;
             if (currentRoom != natives.getRoomKeyFromEntity(player) && !natives.hasEntityClearLosToEntity(this.localPlayer, player, 17)) {
@@ -1036,7 +1036,8 @@ export class YaCAClientModule {
                 direction: natives.getEntityForwardVector(player),
                 range: voiceSetting.range,
                 is_underwater: natives.isPedSwimmingUnderWater(player),
-                muffle_intensity: muffleIntensity
+                muffle_intensity: muffleIntensity,
+                is_muted: voiceSetting.forceMuted
             });
 
             // Phone speaker handling.
@@ -1081,6 +1082,7 @@ export class YaCAClientModule {
                 player_direction: this.getCamDirection(),
                 player_position: localPos,
                 player_is_underwater: natives.isPedSwimmingUnderWater(this.localPlayer),
+                player_is_muted: this.localPlayer.yacaPlugin.forceMuted,
                 players_list: players
             }
         });
