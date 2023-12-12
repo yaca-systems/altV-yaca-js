@@ -135,6 +135,8 @@ export class YaCAClientModule {
     playersWithShortRange = new Map();
     playersInRadioChannel = new Map();
 
+    useWhisper = false;
+
     webview = WebView.getInstance();
 
     mhinTimeout = null;
@@ -381,7 +383,12 @@ export class YaCAClientModule {
             this.setRadioFrequency(channel, frequency);
         });
 
-        alt.onServer("client:yaca:radioTalking", (target, frequency, state, infos) => {
+        alt.onServer("client:yaca:radioTalking", (target, frequency, state, infos, self = false) => {
+            if (self) {
+                this.radioTalkingStateToPluginWithWhisper(state, target);
+                return;
+            }
+
             const player = alt.Player.getByRemoteID(target);
             if (!player?.valid) return;
 
@@ -542,7 +549,9 @@ export class YaCAClientModule {
             const target = alt.Player.getByRemoteID(targetID);
             if (!target?.valid) return;
 
-            YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE, state);
+            const targets = this.useWhisper ? [target, this.localPlayer] : [target];
+
+            YaCAClientModule.setPlayersCommType(targets, YacaFilterEnum.PHONE, state, undefined, undefined, true);
 
             target.isOnPhone = state;
         });
@@ -557,7 +566,9 @@ export class YaCAClientModule {
             const target = alt.Player.getByRemoteID(targetID);
             if (!target?.valid) return;
 
-            YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE_HISTORICAL, state);
+            const targets = this.useWhisper ? [target, this.localPlayer] : [target];
+
+            YaCAClientModule.setPlayersCommType(targets, YacaFilterEnum.PHONE_HISTORICAL, state, undefined, undefined, true);
         });
 
         /* =========== alt:V Events =========== */
@@ -691,8 +702,11 @@ export class YaCAClientModule {
              */
             muffling_range: 2,
             build_type: YacaBuildType.RELEASE, // 0 = Release, 1 = Debug,
-            unmute_delay: 400
+            unmute_delay: 400,
+            operation_mode: dataObj.useWhisper ? 1 : 0,
         });
+
+        this.useWhisper = dataObj.useWhisper;
     }
 
     isPluginInitialized() {
@@ -755,6 +769,7 @@ export class YaCAClientModule {
         }
 
         const message = translations[payload.code] ?? "Unknown error!";
+        if (!translations[payload.code]) alt.log(`[YaCA-Websocket]: Unknown error code: ${payload.code}`);
         if (message.length < 1) return;
 
         natives.beginTextCommandThefeedPost("STRING");
@@ -886,7 +901,7 @@ export class YaCAClientModule {
      * @param {number} [channel] - The channel for the communication. Optional.
      * @param {number} [range] - The range for the communication. Optional.
      */
-    static setPlayersCommType(players, type, state, channel, range) {
+    static setPlayersCommType(players, type, state, channel, range, bidirectional = false) {
         if (!Array.isArray(players)) players = [players];
 
         let cids = [];
@@ -903,6 +918,8 @@ export class YaCAClientModule {
             comm_type: type,
             client_ids: cids
         }
+
+        if (YaCAClientModule.getInstance().useWhisper) protocol.bidirectional = bidirectional;
 
         // @ts-ignore
         if (typeof channel !== "undefined") protocol.channel = channel;
@@ -1082,6 +1099,7 @@ export class YaCAClientModule {
             player: {
                 player_direction: this.getCamDirection(),
                 player_position: localPos,
+                player_range: this.localPlayer.yacaPlugin.range,
                 player_is_underwater: natives.isPedSwimmingUnderWater(this.localPlayer),
                 player_is_muted: this.localPlayer.yacaPlugin.forceMuted,
                 players_list: players
@@ -1135,6 +1153,18 @@ export class YaCAClientModule {
      */
     radioTalkingStateToPlugin(state) {
         YaCAClientModule.setPlayersCommType(this.localPlayer, YacaFilterEnum.RADIO, state, this.activeRadioChannel);
+    }
+
+    radioTalkingStateToPluginWithWhisper(state, targets) {
+        let comDeviceTargets = [this.localPlayer];
+        for (const target of targets) {
+            const player = alt.Player.getByRemoteID(target);
+            if (!player?.valid) continue;
+
+            comDeviceTargets.push(player);
+        }
+            
+        YaCAClientModule.setPlayersCommType(comDeviceTargets, YacaFilterEnum.RADIO, state, this.activeRadioChannel);
     }
 
     /**
@@ -1211,7 +1241,7 @@ export class YaCAClientModule {
         if (!state) {
             if (this.radioTalking) {
                 this.radioTalking = false;
-                this.radioTalkingStateToPlugin(false);
+                if (!this.useWhisper) this.radioTalkingStateToPlugin(false);
                 alt.emitServerRaw("server:yaca:radioTalking", false);
                 this.webview.emit('webview:hud:isRadioTalking', false);
                 if (clearPedTasks) natives.stopAnimTask(this.localPlayer, "random@arrests", "generic_radio_chatter", 4);
@@ -1223,7 +1253,7 @@ export class YaCAClientModule {
         if (!this.radioEnabled || !this.radioFrequenceSetted || this.radioTalking || this.localPlayer.isReloading) return;
 
         this.radioTalking = true;
-        this.radioTalkingStateToPlugin(true);
+        if (!this.useWhisper) this.radioTalkingStateToPlugin(true);
 
         alt.Utils.requestAnimDict("random@arrests").then(() => {
             natives.taskPlayAnim(this.localPlayer, "random@arrests", "generic_radio_chatter", 3, -4, -1, 49, 0.0, false, false, false);

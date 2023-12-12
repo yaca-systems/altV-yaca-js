@@ -49,7 +49,10 @@ const settings = {
     CHANNEL_PASSWORD: "",
 
     // Default Teamspeak Channel, if player can't be moved back to his old channel
-    DEFAULT_CHANNEL_ID: 1
+    DEFAULT_CHANNEL_ID: 1,
+
+    // If true, it will use the teamspeak whisper system
+    USE_WHISPER: false,
 }
 
 /**
@@ -384,6 +387,7 @@ export class YaCAServerModule {
             deChid: settings.DEFAULT_CHANNEL_ID,
             channelPassword: settings.CHANNEL_PASSWORD,
             ingameName: player.voiceSettings.ingameName,
+            useWhisper: settings.USE_WHISPER
         });
     }
 
@@ -492,14 +496,20 @@ export class YaCAServerModule {
         player.radioSettings.frequencies[channel] = "0";
 
         let players = [];
+        let allTargets = [];
         for (const [key, value] of allPlayersInChannel) {
             const target = alt.Player.getByID(key)
             if (!target?.valid) continue;
 
             players.push(target);
+
+            if (key == player.id) continue;
+
+            allTargets.push(target.id);
         }
 
-        if (players.length) alt.emitClientRaw(players, "client:yaca:leaveRadioChannel", player.voiceplugin.clientId, frequency);
+        if (!settings.USE_WHISPER && players.length) alt.emitClientRaw(players, "client:yaca:leaveRadioChannel", player.voiceplugin.clientId, frequency);
+        if (settings.USE_WHISPER) alt.emitClientRaw(player, "client:yaca:radioTalking", allTargets, frequency, false, null, true);
 
         allPlayersInChannel.delete(player.id);
         if (!YaCAServerModule.radioFrequencyMap.get(frequency).size) YaCAServerModule.radioFrequencyMap.delete(frequency)
@@ -551,6 +561,7 @@ export class YaCAServerModule {
 
         const getPlayers = YaCAServerModule.radioFrequencyMap.get(radioFrequency);
         let targets = [];
+        let targetsToSender = [];
         let radioInfos = {} //as { [key: number]: { shortRange: boolean }};
         for (const [key, values] of getPlayers) {
             if (values.muted) {
@@ -575,10 +586,13 @@ export class YaCAServerModule {
                 radioInfos[target.id] = {
                     shortRange: shortRange,
                 }
+
+                targetsToSender.push(target.id);
             }
         }
 
         if (targets.length) alt.emitClientRaw(targets, "client:yaca:radioTalking", player.id, radioFrequency, state, radioInfos);
+        if (settings.USE_WHISPER) alt.emitClientRaw(player, "client:yaca:radioTalking", targetsToSender, radioFrequency, state, radioInfos, true)
     };
 
     /* ======================== PHONE SYSTEM ======================== */
