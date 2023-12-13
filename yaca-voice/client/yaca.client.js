@@ -19,7 +19,6 @@ declare module "alt-client" {
 
     export interface Player {
         yacaPlugin: {
-            radioEnabled: boolean;
             clientId: string,
             forceMuted: boolean,
             range: number,
@@ -299,7 +298,6 @@ export class YaCAClientModule {
                 if (!player?.valid) continue;
 
                 player.yacaPlugin = {
-                    radioEnabled: player.yacaPlugin?.radioEnabled || false,
                     clientId: dataObj.clientId,
                     forceMuted: dataObj.forceMuted,
                     range: dataObj.range,
@@ -353,7 +351,7 @@ export class YaCAClientModule {
         this.webview.on('client:yaca:enableRadio', (state) => {
             if (!this.isPluginInitialized()) return;
 
-            if (this.localPlayer.yacaPlugin.radioEnabled != state) {
+            if (this.radioEnabled != state) {
                 this.radioEnabled = state;
                 alt.emitServerRaw("server:yaca:enableRadio", state);
 
@@ -594,11 +592,6 @@ export class YaCAClientModule {
                 return;
             }
 
-            if (key == "yaca:radioEnabled") {
-                this.setPlayerVariable(entity, "radioEnabled", newValue);
-                return;
-            }
-
             if (key == "yaca:phoneSpeaker") {
                 if (typeof newValue == "undefined") {
                     this.removePhoneSpeakerFromEntity(entity);
@@ -630,11 +623,6 @@ export class YaCAClientModule {
                     undefined,
                     entity.getStreamSyncedMeta("yaca:megaphoneactive")
                 );
-            }
-
-            // Handle radioenabled variable on stream-in
-            if (entity?.valid && entity.hasStreamSyncedMeta("yaca:radioEnabled")) {
-                this.setPlayerVariable(entity, "radioEnabled", entity.getStreamSyncedMeta("yaca:radioEnabled"));
             }
 
             // Handle phonecallspeaker on stream-in

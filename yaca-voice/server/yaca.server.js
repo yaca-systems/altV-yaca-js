@@ -441,8 +441,6 @@ export class YaCAServerModule {
 
         player.radioSettings.activated = state;
         YaCAServerModule.isLongRadioPermitted(player);
-
-        player.setStreamSyncedMeta('yaca:radioEnabled', state);
     }
 
     /**
