@@ -570,7 +570,7 @@ export class YaCAClientModule {
 
             const targets = this.useWhisper ? [target, this.localPlayer] : [target];
 
-            YaCAClientModule.setPlayersCommType(targets, YacaFilterEnum.PHONE_HISTORICAL, state, undefined, undefined, true);
+            YaCAClientModule.setPlayersCommType(targets, YacaFilterEnum.PHONE_HISTORICAL, state, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
         });
 
         /* =========== alt:V Events =========== */
@@ -579,9 +579,9 @@ export class YaCAClientModule {
 
             if (key == "yaca:isMutedOnPhone" && entity.isOnPhone) {
                 if (newValue) {
-                    YaCAClientModule.setPlayersCommType(entity, YacaFilterEnum.PHONE, false);
+                    YaCAClientModule.setPlayersCommType(entity, YacaFilterEnum.PHONE, false, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
                 } else {
-                    YaCAClientModule.setPlayersCommType(entity, YacaFilterEnum.PHONE, true);
+                    YaCAClientModule.setPlayersCommType(entity, YacaFilterEnum.PHONE, true, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
                 }
                 return;
             }
@@ -649,7 +649,7 @@ export class YaCAClientModule {
             if (this.playersWithShortRange.has(entityID)) {
                 const channel = this.findRadioChannelByFrequency(this.playersWithShortRange.get(entityID));
                 if (channel) {
-                    YaCAClientModule.setPlayersCommType(entity, YacaFilterEnum.RADIO, true, channel);
+                    YaCAClientModule.setPlayersCommType(entity, YacaFilterEnum.RADIO, true, channel, undefined, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
                 }
             }
 
@@ -676,7 +676,7 @@ export class YaCAClientModule {
 
             // Handle shortrange radio on stream-out
             if (this.playersWithShortRange.has(entityID)) {
-                YaCAClientModule.setPlayersCommType(entity, YacaFilterEnum.RADIO, false);
+                YaCAClientModule.setPlayersCommType(entity, YacaFilterEnum.RADIO, false, undefined, undefined, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
             }
         });
     }
@@ -1231,7 +1231,7 @@ export class YaCAClientModule {
             players.delete(player.remoteID);
         }
 
-        if (targets.length) YaCAClientModule.setPlayersCommType(targets, YacaFilterEnum.RADIO, false, channel, undefined, CommDeviceMode.RECEIVER);
+        if (targets.length) YaCAClientModule.setPlayersCommType(targets, YacaFilterEnum.RADIO, false, channel, undefined, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
     }
 
     /**
@@ -1284,7 +1284,7 @@ export class YaCAClientModule {
             playersToSet.push(phoneCallMember);
         }
 
-        YaCAClientModule.setPlayersCommType(playersToSet, YacaFilterEnum.PHONE_SPEAKER, false);
+        YaCAClientModule.setPlayersCommType(playersToSet, YacaFilterEnum.PHONE_SPEAKER, false, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
     }
 
     /* ======================== MEGAPHONE SYSTEM ======================== */
