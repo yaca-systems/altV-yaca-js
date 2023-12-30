@@ -592,14 +592,15 @@ export class YaCAClientModule {
 
             // Handle megaphone on meta-change
             if (key === "yaca:megaphoneactive") {
+                const isOwnPlayer = entity.remoteID === this.localPlayer.remoteID;
                 YaCAClientModule.setPlayersCommType(
-                    entity, 
+                    isOwnPlayer ? [] : entity,
                     YacaFilterEnum.MEGAPHONE, 
                     typeof newValue !== "undefined", 
                     undefined,
                     newValue,
-                    entity.id === this.localPlayer.id ? CommDeviceMode.SENDER : CommDeviceMode.RECEIVER,
-                    entity.id === this.localPlayer.id ? CommDeviceMode.RECEIVER : CommDeviceMode.SENDER);
+                    isOwnPlayer ? CommDeviceMode.SENDER : CommDeviceMode.RECEIVER,
+                    isOwnPlayer ? CommDeviceMode.RECEIVER : CommDeviceMode.SENDER);
                 return;
             }
 
