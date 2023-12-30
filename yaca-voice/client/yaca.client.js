@@ -627,7 +627,7 @@ export class YaCAClientModule {
             const entityID = entity.remoteID;
 
             // Handle megaphone on stream-in
-            if (entity?.valid && entity.hasStreamSyncedMeta("yaca:megaphoneactive")) {
+            if (entity.hasStreamSyncedMeta("yaca:megaphoneactive")) {
                 YaCAClientModule.setPlayersCommType(
                     entity,
                     YacaFilterEnum.MEGAPHONE,
@@ -640,7 +640,7 @@ export class YaCAClientModule {
             }
 
             // Handle phonecallspeaker on stream-in
-            if (entity?.valid && entity.hasStreamSyncedMeta("yaca:phoneSpeaker")) {
+            if (entity.hasStreamSyncedMeta("yaca:phoneSpeaker")) {
                 const value = entity.getStreamSyncedMeta("yaca:phoneSpeaker");
 
                 this.setPlayerVariable(entity, "phoneCallMemberIds", Array.isArray(value) ? value : [value]);
@@ -654,9 +654,7 @@ export class YaCAClientModule {
                 }
             }
 
-            if (entity?.valid) {
-                this.syncLipsPlayer(entity, !!entity.getStreamSyncedMeta("yaca:lipsync"));
-            }
+            this.syncLipsPlayer(entity, !!entity.getStreamSyncedMeta("yaca:lipsync"));
         });
 
         alt.on("gameEntityDestroy", (entity) => {
