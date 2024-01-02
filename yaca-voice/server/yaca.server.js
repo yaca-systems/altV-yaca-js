@@ -143,6 +143,7 @@ export class YaCAServerModule {
             maxVoiceRangeInMeter: 15,
             forceMuted: false,
             ingameName: name,
+            mutedOnPhone: false
         };
 
         player.radioSettings = {
@@ -404,7 +405,8 @@ export class YaCAServerModule {
             clientId: clientId,
             forceMuted: player.voiceSettings.forceMuted,
             range: player.voiceSettings.voiceRange,
-            playerId: player.id
+            playerId: player.id,
+            mutedOnPhone: player.voiceSettings.mutedOnPhone
         };
 
         alt.emitAllClientsRaw("client:yaca:addPlayers", player.voiceplugin);
@@ -606,6 +608,11 @@ export class YaCAServerModule {
 
         alt.emitClientRaw(target, "client:yaca:phone", player.id, state);
         alt.emitClientRaw(player, "client:yaca:phone", target.id, state);
+
+        if (!state) {
+            this.muteOnPhone(player, false, true);
+            this.muteOnPhone(target, false, true);
+        }
     }
 
     /**
@@ -620,6 +627,11 @@ export class YaCAServerModule {
 
         alt.emitClientRaw(target, "client:yaca:phoneOld", player.id, state);
         alt.emitClientRaw(player, "client:yaca:phoneOld", target.id, state);
+
+        if (!state) {
+            this.muteOnPhone(player, false, true);
+            this.muteOnPhone(target, false, true);
+        }
     }
 
     /**
@@ -627,15 +639,13 @@ export class YaCAServerModule {
      *
      * @param {alt.Player} player - The player to mute.
      * @param {boolean} state - The mute state.
+     * @param {boolean} [onCallStop=false] - Whether the call has stopped. Defaults to false if not provided.
      */
-    muteOnPhone(player, state) {
+    muteOnPhone(player, state, onCallStop = false) {
         if (!player?.valid) return;
 
-        if (state) {
-            player.setSyncedMeta("yaca:isMutedOnPhone", state);
-        } else {
-            player.deleteSyncedMeta("yaca:isMutedOnPhone");
-        }
+        player.voiceSettings.mutedOnPhone = state;
+        alt.emitAllClientsRaw("client:yaca:phoneMute", player.id, state, onCallStop);
     }
 
     /**
