@@ -806,8 +806,8 @@ export class YaCAClientModule {
         }
 
         const message = translations[payload.code] ?? "Unknown error!";
+        if (typeof translations[payload.code] == "undefined") alt.log(`[YaCA-Websocket]: Unknown error code: ${payload.code}`);
         if (message.length < 1) return;
-        if (!translations[payload.code]) alt.log(`[YaCA-Websocket]: Unknown error code: ${payload.code}`);
 
         natives.beginTextCommandThefeedPost("STRING");
         natives.addTextComponentSubstringPlayerName(`Voice: ${message}`);
