@@ -291,8 +291,6 @@ export class YaCAServerModule {
      * @param {boolean} alive - The new alive status.
      */
     static changePlayerAliveStatus(player, alive) {
-        if (!player.states.isAlive && alive) return;
-
         player.voiceSettings.forceMuted = !alive;
         alt.emitAllClientsRaw("client:yaca:muteTarget", player.id, !alive);
 
