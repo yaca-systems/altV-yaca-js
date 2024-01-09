@@ -57,7 +57,7 @@ const CommDeviceMode = {
 
 /**
  * @typedef {Object} YacaResponse
- * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "MUTE_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT"} code - The response code.
+ * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "MUTE_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT" | "HEARTBEAT"} code - The response code.
  * @property {string} requestType - The type of the request.
  * @property {string} message - The response message.
  */
@@ -110,7 +110,8 @@ const translations = {
     "WRONG_TS_SERVER": "You are on the wrong teamspeakserver!",
     "NOT_CONNECTED": "You are on the wrong teamspeakserver!",
     "MOVE_ERROR": "Error while moving into ingame teamspeak channel!",
-    "WAIT_GAME_INIT": ""
+    "WAIT_GAME_INIT": "",
+    "HEARTBEAT": ""
 }
 
 export class YaCAClientModule {
