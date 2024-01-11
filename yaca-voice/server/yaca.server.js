@@ -223,6 +223,8 @@ export class YaCAServerModule {
             value.delete(playerID);
             if (!value.size) YaCAServerModule.radioFrequencyMap.delete(key)
         }
+
+        alt.emitAllClientsRaw("client:yaca:disconnect", player.id);
     }
 
     /**
