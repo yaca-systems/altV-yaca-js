@@ -596,29 +596,16 @@ export class YaCAClientModule {
 
             if (onCallstop || !this.onPhoneWith.has(targetID)) return;
 
-            if (this.useWhisper) {
-                if (target.remoteID != this.localPlayer.remoteID) {
-                    YaCAClientModule.setPlayersCommType(
-                        target,
-                        YacaFilterEnum.PHONE,
-                        !state,
-                        undefined,
-                        undefined,
-                        undefined,
-                        CommDeviceMode.SENDER
-                    );
-                } else {
-                    YaCAClientModule.setPlayersCommType(
-                        [],
-                        YacaFilterEnum.PHONE,
-                        !state,
-                        undefined,
-                        undefined,
-                        state ? CommDeviceMode.SENDER : CommDeviceMode.TRANSCEIVER,
-                        CommDeviceMode.TRANSCEIVER
-                    );
-                }
-            } else {
+            if (this.useWhisper && target.remoteID == this.localPlayer.remoteID) {
+                YaCAClientModule.setPlayersCommType(
+                    [],
+                    YacaFilterEnum.PHONE,
+                    !state,
+                    undefined,
+                    undefined,
+                    CommDeviceMode.SENDER
+                );
+            } else if (!this.useWhisper) {
                 if (newValue) {
                     YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE, false, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
                 } else {
