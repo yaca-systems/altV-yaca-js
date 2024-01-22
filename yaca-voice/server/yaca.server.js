@@ -612,6 +612,8 @@ export class YaCAServerModule {
         if (!state) {
             this.muteOnPhone(player, false, true);
             this.muteOnPhone(target, false, true);
+        } else {
+            if (player.hasStreamSyncedMeta("yaca:phoneSpeaker")) this.enablePhoneSpeaker(player, true, [player.id, target.id]);
         }
     }
 
@@ -631,6 +633,8 @@ export class YaCAServerModule {
         if (!state) {
             this.muteOnPhone(player, false, true);
             this.muteOnPhone(target, false, true);
+        } else {
+            if (player.hasStreamSyncedMeta("yaca:phoneSpeaker")) this.enablePhoneSpeaker(player, true, [player.id, target.id]);
         }
     }
 
@@ -659,9 +663,9 @@ export class YaCAServerModule {
         if (!player?.valid) return;
 
         if (state) {
-            player.setSyncedMeta("yaca:phoneSpeaker", phoneCallMemberIds);
+            player.setStreamSyncedMeta("yaca:phoneSpeaker", phoneCallMemberIds);
         } else {
-            player.deleteSyncedMeta("yaca:phoneSpeaker");
+            player.deleteStreamSyncedMeta("yaca:phoneSpeaker");
         }
     }
 }
