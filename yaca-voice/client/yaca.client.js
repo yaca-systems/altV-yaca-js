@@ -142,7 +142,7 @@ export class YaCAClientModule {
     playersWithShortRange = new Map();
     playersInRadioChannel = new Map();
 
-    onPhoneWith = new Map();
+    onPhoneWith = new Set();
 
     useWhisper = false;
 
