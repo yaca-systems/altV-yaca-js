@@ -606,7 +606,7 @@ export class YaCAClientModule {
                     CommDeviceMode.SENDER
                 );
             } else if (!this.useWhisper) {
-                if (newValue) {
+                if (state) {
                     YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE, false, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
                 } else {
                     YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE, true, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
