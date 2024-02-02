@@ -1323,7 +1323,7 @@ export class YaCAClientModule {
             playersToSet.push(phoneCallMember);
         }
 
-        YaCAClientModule.setPlayersCommType(playersToSet, YacaFilterEnum.PHONE_SPEAKER, false, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
+        YaCAClientModule.setPlayersCommType(playersToSet, YacaFilterEnum.PHONE_SPEAKER, false);
     
         delete entityData.phoneCallMemberIds;
     }
