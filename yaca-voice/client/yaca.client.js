@@ -542,11 +542,11 @@ export class YaCAClientModule {
             }
 
             if (playersToRemove.length) {
-                YaCAClientModule.setPlayersCommType(playersToRemove, YacaFilterEnum.INTERCOM, false);
+                YaCAClientModule.setPlayersCommType(playersToRemove, YacaFilterEnum.INTERCOM, false, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
             }
 
             if (playersToAdd.length) {
-                YaCAClientModule.setPlayersCommType(playersToAdd, YacaFilterEnum.INTERCOM, true);
+                YaCAClientModule.setPlayersCommType(playersToAdd, YacaFilterEnum.INTERCOM, true, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
             }
         });
 
