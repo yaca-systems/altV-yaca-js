@@ -143,7 +143,8 @@ export class YaCAServerModule {
             maxVoiceRangeInMeter: 15,
             forceMuted: false,
             ingameName: name,
-            mutedOnPhone: false
+            mutedOnPhone: false,
+            inCallWith: []
         };
 
         player.radioSettings = {
@@ -206,6 +207,22 @@ export class YaCAServerModule {
         //YaCA-Radio: Change active radio channel
         alt.onClient("server:yaca:changeActiveRadioChannel", (player, channel) => {
             this.radioActiveChannelChange(player, channel)
+        });
+
+        alt.onClient("server:yaca:phoneSpeakerEmit", (player, enableForTargets, disableForTargets) => {
+            const enableWhisperReceive = [];
+            const disableWhisperReceive = [];
+
+            player.voiceSettings.inCallWith.forEach(callTarget => {
+                const target = alt.Player.getByID(callTarget);
+                if (!target?.valid) return;
+
+                if (enableForTargets?.length) enableWhisperReceive.push(target);
+                if (disableForTargets?.length) disableWhisperReceive.push(target);
+            });
+
+            if (enableTargets.length) alt.emitClientRaw(enableWhisperReceive, "client:yaca:playersToPhoneSpeakerEmit", enableForTargets, true);
+            if (disableTargets.length) alt.emitClientRaw(disableWhisperReceive, "client:yaca:playersToPhoneSpeakerEmit", disableForTargets, false);
         });
     }
 
@@ -612,8 +629,14 @@ export class YaCAServerModule {
         if (!state) {
             this.muteOnPhone(player, false, true);
             this.muteOnPhone(target, false, true);
+
+            player.voiceSettings.inCallWith.push(target.id);
+            target.voiceSettings.inCallWith.push(player.id);
         } else {
             if (player.hasStreamSyncedMeta("yaca:phoneSpeaker")) this.enablePhoneSpeaker(player, true, [player.id, target.id]);
+
+            player.voiceSettings.inCallWith = player.voiceSettings.inCallWith.filter(id => id !== target.id);
+            target.voiceSettings.inCallWith = target.voiceSettings.inCallWith.filter(id => id !== player.id);
         }
     }
 
