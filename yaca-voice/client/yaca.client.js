@@ -1177,7 +1177,7 @@ export class YaCAClientModule {
                 player_range: localData.range,
                 player_is_underwater: natives.isPedSwimmingUnderWater(this.localPlayer),
                 player_is_muted: localData.forceMuted,
-                players_list: players
+                players_list: Array.from(players.values())
             }
         });
     }
