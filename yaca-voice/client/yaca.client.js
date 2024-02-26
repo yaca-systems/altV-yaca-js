@@ -1131,7 +1131,7 @@ export class YaCAClientModule {
                     if (!phoneCallMember || phoneCallMember.mutedOnPhone || phoneCallMember.forceMuted) continue;
 
                     players.delete(phoneCallMemberId);
-                    players.push(phoneCallMemberId, {
+                    players.set(phoneCallMemberId, {
                         client_id: phoneCallMember.clientId,
                         position: player.pos,
                         direction: natives.getEntityForwardVector(player),
