@@ -221,8 +221,8 @@ export class YaCAServerModule {
                 if (disableForTargets?.length) disableWhisperReceive.push(target);
             });
 
-            if (enableTargets.length) alt.emitClientRaw(enableWhisperReceive, "client:yaca:playersToPhoneSpeakerEmit", enableForTargets, true);
-            if (disableTargets.length) alt.emitClientRaw(disableWhisperReceive, "client:yaca:playersToPhoneSpeakerEmit", disableForTargets, false);
+            if (enableWhisperReceive.length) alt.emitClientRaw(enableWhisperReceive, "client:yaca:playersToPhoneSpeakerEmit", enableForTargets, true);
+            if (disableWhisperReceive.length) alt.emitClientRaw(disableWhisperReceive, "client:yaca:playersToPhoneSpeakerEmit", disableForTargets, false);
         });
     }
 
