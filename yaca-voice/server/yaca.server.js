@@ -164,6 +164,9 @@ export class YaCAServerModule {
         alt.on("entityEnterColshape", this.handleEntityEnterColshape.bind(this));
         alt.on("entityLeaveColshape", this.handleEntityLeaveColshape.bind(this));
 
+        //Events if called from other serverside ressource
+        alt.on("server:yaca:connect", this.connectToVoice.bind(this));
+
         // YaCA: voice range toggle
         alt.onClient("server:yaca:changeVoiceRange", this.changeVoiceRange.bind(this));
 
