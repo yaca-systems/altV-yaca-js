@@ -742,7 +742,7 @@ export class YaCAClientModule {
              * if the value is set to -1, the player voice range is taken
              * if the value is >= 0, you can set the max muffling range before it gets completely cut off
              */
-            muffling_range: -1,
+            muffling_range: 2,
             build_type: YacaBuildType.RELEASE, // 0 = Release, 1 = Debug,
             unmute_delay: 400,
             operation_mode: dataObj.useWhisper ? 1 : 0,
