@@ -850,6 +850,87 @@ export class YaCAClientModule {
     }
 
     /**
+     * Checks if a vehicle has an opening (like a missing roof, an open convertible roof, a broken window, or an open or damaged door).
+     *
+     * @param {alt.Vehicle} vehicle - The vehicle to check for openings.
+     * @returns {boolean} Returns true if the vehicle has an opening, false otherwise.
+     */
+    vehicleHasOpening(vehicle) {
+        if (!natives.doesVehicleHaveRoof(vehicle)) return true;
+        if (natives.isVehicleAConvertible(vehicle, false) && natives.getConvertibleRoofState(vehicle) !== 0) return true;
+        if (!natives.areAllVehicleWindowsIntact(vehicle)) return true;
+
+        const doors = [];
+        for (let i = 0; i < 6; i++) {
+            if (i === 4 || !this.hasVehicleDoor(vehicle, i)) continue;
+            doors.push(i);
+        }
+      
+        if (doors.length === 0) return true;
+
+        for (const door of doors) {
+            if (natives.getVehicleDoorAngleRatio(vehicle, door) > 0) return true;
+            if (natives.isVehicleDoorDamaged(vehicle, door)) return true;
+        }
+      
+        for (let i = 0; i < 8 /* max windows */; i++) {
+            if (this.hasVehicleWindow(vehicle, i) && !natives.isVehicleWindowIntact(vehicle, i)) {
+                return true;
+            }
+        }
+      
+        return false;
+    }
+
+    /**
+     * Checks if the vehicle has a window.
+     *
+     * @param {alt.Vehicle} vehicle - The vehicle.
+     * @param {number} windowId - The window ID to check.
+     * @returns {boolean} - Whether the vehicle has a window.
+     */
+    hasVehicleWindow(vehicle, windowId) {
+        switch (windowId) {
+            case 0:
+                return natives.getEntityBoneIndexByName(vehicle, "window_lf") !== -1;
+            case 1:
+                return natives.getEntityBoneIndexByName(vehicle, "window_rf") !== -1;
+            case 2:
+                return natives.getEntityBoneIndexByName(vehicle, "window_lr") !== -1;
+            case 3:
+                return natives.getEntityBoneIndexByName(vehicle, "window_rr") !== -1;
+            default:
+                return false;
+        }
+    }
+  
+    /**
+     * Checks if the vehicle has a door.
+     *
+     * @param {alt.Vehicle} vehicle - The vehicle.
+     * @param {number} doorId - The door ID to check.
+     * @returns {boolean} - Whether the vehicle has a door.
+     */
+    hasVehicleDoor(vehicle, doorId) {
+        switch (doorId) {
+            case 0:
+                return natives.getEntityBoneIndexByName(vehicle, "door_dside_f") !== -1;
+            case 1:
+                return natives.getEntityBoneIndexByName(vehicle, "door_pside_f") !== -1;
+            case 2:
+                return natives.getEntityBoneIndexByName(vehicle, "door_dside_r") !== -1;
+            case 3:
+                return natives.getEntityBoneIndexByName(vehicle, "door_pside_r") !== -1;
+            case 4:
+                return natives.getEntityBoneIndexByName(vehicle, "bonnet") !== -1;
+            case 5:
+                return natives.getEntityBoneIndexByName(vehicle, "boot") !== -1;
+            default:
+                return false;
+        }
+    }
+
+    /**
      * Sets a variable for a player.
      *
      * @param {alt.Player} player - The player for whom the variable is to be set.
@@ -1086,6 +1167,7 @@ export class YaCAClientModule {
         const players = new Map();
         const allPlayers = alt.Player.streamedIn;
         const localPos = this.localPlayer.pos;
+        const localVehicle = this.localPlayer.vehicle;
         const currentRoom = natives.getRoomKeyFromEntity(this.localPlayer);
         const playersToPhoneSpeaker = new Set();
         const playersOnPhoneSpeaker = new Set();
@@ -1102,6 +1184,9 @@ export class YaCAClientModule {
             let muffleIntensity = 0;
             if (currentRoom != natives.getRoomKeyFromEntity(player) && !natives.hasEntityClearLosToEntity(this.localPlayer, player, 17)) {
                 muffleIntensity = 10; // 10 is the maximum intensity
+            } else if (localVehicle != player.vehicle) {
+                if (localVehicle?.valid && !this.vehicleHasOpening(localVehicle)) muffleIntensity += 3;
+                if (player.vehicle?.valid && !this.vehicleHasOpening(player.vehicle)) muffleIntensity += 3;
             }
 
             if (!playersOnPhoneSpeaker.has(voiceSetting.remoteID)) {
