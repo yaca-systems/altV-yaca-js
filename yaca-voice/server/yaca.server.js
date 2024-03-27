@@ -166,6 +166,9 @@ export class YaCAServerModule {
 
         //Events if called from other serverside ressource
         alt.on("server:yaca:connect", this.connectToVoice.bind(this));
+        alt.on("server:yaca:callPlayer", this.callPlayer.bind(this));
+        alt.on("server:yaca:callPlayerOldEffect", this.callPlayerOldEffect.bind(this));
+        alt.on("server:yaca:changePlayerAliveStatus", this.changePlayerAliveStatus.bind(this));
 
         // YaCA: voice range toggle
         alt.onClient("server:yaca:changeVoiceRange", this.changeVoiceRange.bind(this));
@@ -227,6 +230,9 @@ export class YaCAServerModule {
             if (enableWhisperReceive.length) alt.emitClientRaw(enableWhisperReceive, "client:yaca:playersToPhoneSpeakerEmit", enableForTargets, true);
             if (disableWhisperReceive.length) alt.emitClientRaw(disableWhisperReceive, "client:yaca:playersToPhoneSpeakerEmit", disableForTargets, false);
         });
+
+        alt.onClient("server:yaca:muteOnPhone", this.muteOnPhone.bind(this));
+        alt.onClient("server:yaca:enablePhoneSpeaker", this.enablePhoneSpeaker.bind(this));
     }
 
     /**
@@ -312,7 +318,7 @@ export class YaCAServerModule {
      * @param {alt.Player} player - The player whose alive status is to be changed.
      * @param {boolean} alive - The new alive status.
      */
-    static changePlayerAliveStatus(player, alive) {
+    changePlayerAliveStatus(player, alive) {
         player.voiceSettings.forceMuted = !alive;
         alt.emitAllClientsRaw("client:yaca:muteTarget", player.id, !alive);
 
@@ -659,8 +665,14 @@ export class YaCAServerModule {
         if (!state) {
             this.muteOnPhone(player, false, true);
             this.muteOnPhone(target, false, true);
+
+            player.voiceSettings.inCallWith.push(target.id);
+            target.voiceSettings.inCallWith.push(player.id);
         } else {
             if (player.hasStreamSyncedMeta("yaca:phoneSpeaker")) this.enablePhoneSpeaker(player, true, [player.id, target.id]);
+
+            player.voiceSettings.inCallWith = player.voiceSettings.inCallWith.filter(id => id !== target.id);
+            target.voiceSettings.inCallWith = target.voiceSettings.inCallWith.filter(id => id !== player.id);
         }
     }
 
