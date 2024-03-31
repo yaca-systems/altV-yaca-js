@@ -318,7 +318,7 @@ export class YaCAClientModule {
                     range: dataObj.range,
                     isTalking: false,
                     phoneCallMemberIds: currentData?.phoneCallMemberIds || undefined,
-                    mutedOnPhone: dataObj.MutedOnPhone,
+                    mutedOnPhone: dataObj.mutedOnPhone,
                 })
             }
         });
