@@ -1184,7 +1184,7 @@ export class YaCAClientModule {
             let muffleIntensity = 0;
             if (currentRoom != natives.getRoomKeyFromEntity(player) && !natives.hasEntityClearLosToEntity(this.localPlayer, player, 17)) {
                 muffleIntensity = 10; // 10 is the maximum intensity
-            } else if (localVehicle != player.vehicle) {
+            } else if (localVehicle != player.vehicle && !player.hasStreamSyncedMeta("yaca:megaphoneactive")) {
                 if (localVehicle?.valid && !this.vehicleHasOpening(localVehicle)) muffleIntensity += 3;
                 if (player.vehicle?.valid && !this.vehicleHasOpening(player.vehicle)) muffleIntensity += 3;
             }
