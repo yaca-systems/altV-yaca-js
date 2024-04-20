@@ -395,7 +395,7 @@ export class YaCAServerModule {
         if (player.voiceSettings.maxVoiceRangeInMeter < range) return player.emitRaw("client:yaca:setMaxVoiceRange", 15);
 
         player.voiceSettings.voiceRange = range;
-        alt.emitAllClientsRaw("client:yaca:changeVoiceRange", player.id, player.voiceSettings.voiceRange);
+        player.setStreamSyncedMeta("yaca:voicerange", player.voiceSettings.voiceRange);
 
         if (player.voiceplugin) player.voiceplugin.range = range;
     }

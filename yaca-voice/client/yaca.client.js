@@ -335,21 +335,6 @@ export class YaCAClientModule {
         });
 
         /**
-         * Handles the "client:yaca:changeVoiceRange" server event.
-         *
-         * @param {number} target - The target whose voice range is to be changed.
-         * @param {number} range - The new voice range.
-         */
-        alt.onServer("client:yaca:changeVoiceRange", (target, range) => {
-            if (target == this.localPlayer.remoteID && !this.isPlayerMuted) {
-                this.webview.emit('webview:hud:voiceDistance', range);
-            }
-
-            const player = this.getPlayerByID(target);
-            if (player) player.range = range;
-        });
-
-        /**
          * Handles the "client:yaca:setMaxVoiceRange" server event.
          *
          * @param {number} maxRange - The maximum voice range to be set.
@@ -631,61 +616,15 @@ export class YaCAClientModule {
         alt.on("streamSyncedMetaChange", (entity, key, newValue, oldValue) => {
             if (!entity?.valid || !(entity instanceof alt.Player) || !entity.isSpawned) return;
 
-            // Handle megaphone on meta-change
-            if (key === "yaca:megaphoneactive") {
-                const isOwnPlayer = entity.remoteID === this.localPlayer.remoteID;
-                YaCAClientModule.setPlayersCommType(
-                    isOwnPlayer ? [] : this.getPlayerByID(entity.remoteID),
-                    YacaFilterEnum.MEGAPHONE, 
-                    typeof newValue !== "undefined", 
-                    undefined,
-                    newValue,
-                    isOwnPlayer ? CommDeviceMode.SENDER : CommDeviceMode.RECEIVER,
-                    isOwnPlayer ? CommDeviceMode.RECEIVER : CommDeviceMode.SENDER);
-                return;
-            }
-
-            if (key == "yaca:phoneSpeaker") {
-                if (entity.remoteID == this.localPlayer.remoteID) this.phoneSpeakerActive = !!newValue;
-
-                if (typeof newValue == "undefined") {
-                    this.removePhoneSpeakerFromEntity(entity);
-                } else {
-                    if (oldValue && newValue) this.removePhoneSpeakerFromEntity(entity);
-                    this.setPlayerVariable(entity, "phoneCallMemberIds", Array.isArray(newValue) ? newValue : [newValue]);
-                }
-                return;
-            }
-
-            if (key == "yaca:lipsync") {
-                this.syncLipsPlayer(entity, !!newValue);
-                return;
-            }
+            this.handleSyncedMetas(entity, key, newValue, oldValue);
         });
 
         alt.on("gameEntityCreate", (entity) => {
             if (!entity?.valid || !(entity instanceof alt.Player)) return;
 
-            const entityID = entity.remoteID;
-
-            // Handle megaphone on stream-in
-            if (entity.hasStreamSyncedMeta("yaca:megaphoneactive")) {
-                YaCAClientModule.setPlayersCommType(
-                    this.getPlayerByID(entity.remoteID),
-                    YacaFilterEnum.MEGAPHONE,
-                    true,
-                    undefined,
-                    entity.getStreamSyncedMeta("yaca:megaphoneactive"),
-                    CommDeviceMode.RECEIVER,
-                    CommDeviceMode.SENDER
-                );
-            }
-
-            // Handle phonecallspeaker on stream-in
-            if (entity.hasStreamSyncedMeta("yaca:phoneSpeaker")) {
-                const value = entity.getStreamSyncedMeta("yaca:phoneSpeaker");
-
-                this.setPlayerVariable(entity, "phoneCallMemberIds", Array.isArray(value) ? value : [value]);
+            const keys = entity.getStreamSyncedMetaKeys();
+            for (const key of keys) {
+                this.handleSyncedMetas(entity, key, entity.getStreamSyncedMeta(key));
             }
 
             // Handle shortrange radio on stream-in
@@ -695,8 +634,6 @@ export class YaCAClientModule {
                     YaCAClientModule.setPlayersCommType(this.getPlayerByID(entityID), YacaFilterEnum.RADIO, true, channel, undefined, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
                 }
             }
-
-            this.syncLipsPlayer(entity, !!entity.getStreamSyncedMeta("yaca:lipsync"));
         });
 
         alt.on("gameEntityDestroy", (entity) => {
@@ -720,6 +657,50 @@ export class YaCAClientModule {
     }
 
     /* ======================== Helper Functions ======================== */
+    handleSyncedMetas(entity, key, value, oldValue) {
+        const isOwnPlayer = entity.remoteID === this.localPlayer.remoteID;
+
+        switch (key) {
+            case "yaca:megaphoneactive": {
+                YaCAClientModule.setPlayersCommType(
+                    isOwnPlayer ? [] : this.getPlayerByID(entity.remoteID),
+                    YacaFilterEnum.MEGAPHONE,
+                    typeof value !== "undefined",
+                    undefined,
+                    value,
+                    isOwnPlayer ? CommDeviceMode.SENDER : CommDeviceMode.RECEIVER,
+                    isOwnPlayer ? CommDeviceMode.RECEIVER : CommDeviceMode.SENDER
+                );
+                break;
+            }
+
+            case "yaca:phoneSpeaker": {
+                if (isOwnPlayer) this.phoneSpeakerActive = !!value;
+
+                if (typeof value == "undefined") {
+                    this.removePhoneSpeakerFromEntity(entity);
+                } else {
+                    if (oldValue && value) this.removePhoneSpeakerFromEntity(entity);
+                    this.setPlayerVariable(entity, "phoneCallMemberIds", Array.isArray(value) ? value : [value]);
+                }
+                break;
+            }
+
+            case "yaca:lipsync": {
+                this.syncLipsPlayer(entity, !!value);
+                break;
+            }
+
+            case "yaca:voicerange": {
+                if (typeof value == "undefined") return;
+
+                if (isOwnPlayer && !this.isPlayerMuted) this.webview.emit('webview:hud:voiceDistance', value);
+                this.setPlayerVariable(entity, "range", value);
+                break;
+            }
+        }
+    }
+
     getPlayerByID(remoteId) {
         return YaCAClientModule.allPlayers.get(remoteId);
     }
