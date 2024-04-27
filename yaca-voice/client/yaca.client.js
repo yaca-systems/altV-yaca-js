@@ -352,8 +352,6 @@ export class YaCAClientModule {
                 }
             }
 
-            this.webview.emit('webview:hud:radioState', state);
-
             if (state && !this.radioInited) {
                 this.radioInited = true;
                 this.initRadioSettings();
@@ -1271,7 +1269,7 @@ export class YaCAClientModule {
         if (!this.radioToggle && !alt.isCursorVisible()) {
             this.radioToggle = true;
             alt.showCursor(true);
-            this.webview.emit('webview:radio:openState', true);
+            this.webview.emit('webview:yaca:openState', true);
         } else if (this.radioToggle) {
             this.closeRadio();
         }
@@ -1284,7 +1282,7 @@ export class YaCAClientModule {
         this.radioToggle = false;
 
         alt.showCursor(false);
-        this.webview.emit('webview:radio:openState', false);
+        this.webview.emit('webview:yaca:openState', false);
     }
 
     /**
@@ -1332,8 +1330,7 @@ export class YaCAClientModule {
     updateRadioInWebview(channel) {
         if (channel != this.activeRadioChannel) return;
 
-        this.webview.emit("webview:radio:setChannelData", this.radioChannelSettings[channel]);
-        this.webview.emit('webview:hud:radioChannel', channel, this.radioChannelSettings[channel].muted);
+        this.webview.emit("webview:yaca:setChannelData", this.radioChannelSettings[channel]);
     }
 
     /**
@@ -1400,7 +1397,6 @@ export class YaCAClientModule {
                 this.radioTalking = false;
                 if (!this.useWhisper) this.radioTalkingStateToPlugin(false);
                 alt.emitServerRaw("server:yaca:radioTalking", false);
-                this.webview.emit('webview:hud:isRadioTalking', false);
                 if (clearPedTasks) natives.stopAnimTask(this.localPlayer, "random@arrests", "generic_radio_chatter", 4);
             }
 
@@ -1416,7 +1412,6 @@ export class YaCAClientModule {
             natives.taskPlayAnim(this.localPlayer, "random@arrests", "generic_radio_chatter", 3, -4, -1, 49, 0.0, false, false, false);
 
             alt.emitServerRaw("server:yaca:radioTalking", true);
-            this.webview.emit('webview:hud:isRadioTalking', true);
         });
     };
 
