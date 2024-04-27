@@ -1,6 +1,6 @@
 import * as alt from 'alt-server';
-import dotenv from "dotenv";
-dotenv.config();
+import config from '../server.config.json' assert { type: 'json' };
+
 //For typescript users
 /*
 declare module "alt-server" {
@@ -38,22 +38,22 @@ declare module "alt-server" {
 
 const settings = {
     // Max Radio Channels
-    maxRadioChannels: parseInt(process.env.YACA_MAX_RADIO_CHANNELS) || 9, // needs to be sync with client setting
+    maxRadioChannels: parseInt(config.YACA_MAX_RADIO_CHANNELS) || 9, // needs to be sync with client setting
 
     // Unique Teamspeakserver ID
-    UNIQUE_SERVER_ID: process.env.YACA_UNIQUE_SERVER_ID || "",
+    UNIQUE_SERVER_ID: config.YACA_UNIQUE_SERVER_ID || "",
 
     // Ingame Voice Channel ID
-    CHANNEL_ID: parseInt(process.env.YACA_CHANNEL_ID) || 0,
+    CHANNEL_ID: parseInt(config.YACA_CHANNEL_ID) || 0,
 
     // Ingame Voice Channel Password
-    CHANNEL_PASSWORD: process.env.YACA_CHANNEL_PASSWORD || "",
+    CHANNEL_PASSWORD: config.YACA_CHANNEL_PASSWORD || "",
 
     // Default Teamspeak Channel, if player can't be moved back to his old channel
-    DEFAULT_CHANNEL_ID: parseInt(process.env.YACA_DEFAULT_CHANNEL_ID) || 1,
+    DEFAULT_CHANNEL_ID: parseInt(config.YACA_DEFAULT_CHANNEL_ID) || 1,
 
     // If true, it will use the teamspeak whisper system
-    USE_WHISPER: process.env.YACA_USE_WHISPER?.toLowerCase() == "true" || false,
+    USE_WHISPER: config.YACA_USE_WHISPER || false,
 }
 
 /**

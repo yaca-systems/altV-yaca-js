@@ -88,3 +88,4 @@ nodemon.json
 .vscode
 
 package-lock.json
+server.config.json
