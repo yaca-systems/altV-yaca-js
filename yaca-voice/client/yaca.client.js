@@ -1,7 +1,6 @@
 import * as alt from 'alt-client';
 import * as natives from 'natives';
 
-import { NKeyhandler } from './Keyhandler.js';
 import { WebView } from '../ui/Webview.js';
 
 //For typescript users
@@ -233,16 +232,6 @@ export class YaCAClientModule {
         };
 
         this.registerEvents();
-
-        NKeyhandler.registerKeybind(107, "yaca:changeVoiceRangeAdd", "Mirkofon-Reichweite +", () => { this.changeVoiceRange(1) });
-        NKeyhandler.registerKeybind(109, "yaca:changeVoiceRangeRemove", "Mirkofon-Reichweite -", () => { this.changeVoiceRange(-1) });
-
-        NKeyhandler.registerKeybind(80, "yaca:radioUI", "Funkgerät öffnen/schließen", () => { this.openRadio() });
-        NKeyhandler.registerKeybind(220, "yaca:radioTalking", "Funk Sprechen", () => { this.radioTalkingStart(true) });
-        NKeyhandler.registerKeybind(220, "yaca:radioTalking", null, () => { this.radioTalkingStart(false) }, { onKeyDown: false });
-
-        NKeyhandler.registerKeybind(96, "yaca:megaphone", "Megaphone", () => { this.useMegaphone(true) })
-        NKeyhandler.registerKeybind(96, "yaca:megaphone", null, () => { this.useMegaphone(false) }, { onKeyDown: false })
 
         alt.log('[Client] YaCA Client loaded');
     }
@@ -613,6 +602,35 @@ export class YaCAClientModule {
         });
 
         /* =========== alt:V Events =========== */
+        alt.on("keydown", (key) => {
+            switch (key) {
+                case 96: // Numpad 0
+                    this.useMegaphone(true);
+                    break;
+                case 220: // Backslash
+                    this.radioTalkingStart(true);
+                    break;
+                case 107: // Numpad +
+                    this.changeVoiceRange(1);
+                    break;
+
+            }
+        });
+
+        alt.on("keyup", (key) => {
+            switch (key) {
+                case 96: // Numpad 0
+                    this.useMegaphone(false);
+                    break;
+                case 220: // Backslash
+                    this.radioTalkingStart(false);
+                    break;
+                case 109: // Numpad -
+                    this.changeVoiceRange(-1);
+                    break;
+            }
+        });
+
         alt.on("streamSyncedMetaChange", (entity, key, newValue, oldValue) => {
             if (!entity?.valid || !(entity instanceof alt.Player) || !entity.isSpawned) return;
 
@@ -1254,7 +1272,6 @@ export class YaCAClientModule {
             this.radioToggle = true;
             alt.showCursor(true);
             this.webview.emit('webview:radio:openState', true);
-            NKeyhandler.disableAllKeybinds("radioUI", true, ["yaca:radioUI", "yaca:radioTalking"], ["yaca:radioTalking"])
         } else if (this.radioToggle) {
             this.closeRadio();
         }
@@ -1268,7 +1285,6 @@ export class YaCAClientModule {
 
         alt.showCursor(false);
         this.webview.emit('webview:radio:openState', false);
-        NKeyhandler.disableAllKeybinds("radioUI", false, ["yaca:radioUI", "yaca:radioTalking"], ["yaca:radioTalking"]);
     }
 
     /**
