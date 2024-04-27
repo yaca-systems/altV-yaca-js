@@ -611,7 +611,9 @@ export class YaCAClientModule {
                 case 107: // Numpad +
                     this.changeVoiceRange(1);
                     break;
-
+                case 80: // P
+                    this.openRadio();
+                    break;
             }
         });
 
