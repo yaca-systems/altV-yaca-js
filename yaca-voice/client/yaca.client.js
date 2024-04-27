@@ -1,7 +1,6 @@
 import * as alt from 'alt-client';
 import * as natives from 'natives';
 
-import { WebView } from '../ui/Webview.js';
 
 //For typescript users
 /*
@@ -146,7 +145,7 @@ export class YaCAClientModule {
 
     useWhisper = false;
 
-    webview = WebView.getInstance();
+    webview = new alt.WebView('http://assets/yaca-ui/dist/index.html');
 
     mhinTimeout = null;
     mhintTick = null;
@@ -1271,7 +1270,9 @@ export class YaCAClientModule {
         if (!this.radioToggle && !alt.isCursorVisible()) {
             this.radioToggle = true;
             alt.showCursor(true);
+            alt.toggleGameControls(false);
             this.webview.emit('webview:yaca:openState', true);
+            this.webview.focus();
         } else if (this.radioToggle) {
             this.closeRadio();
         }
@@ -1281,10 +1282,14 @@ export class YaCAClientModule {
      * Cleanup different things, if player closes his radio.
      */
     closeRadio() {
+        if (!this.radioToggle) return;
+
         this.radioToggle = false;
 
         alt.showCursor(false);
+        alt.toggleGameControls(true);
         this.webview.emit('webview:yaca:openState', false);
+        this.webview.unfocus();
     }
 
     /**
