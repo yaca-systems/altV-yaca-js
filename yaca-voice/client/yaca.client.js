@@ -145,7 +145,7 @@ export class YaCAClientModule {
 
     useWhisper = false;
 
-    webview = new alt.WebView('http://assets/yaca-ui/dist/index.html');
+    webview = new alt.WebView('http://assets/yaca-ui/assets/index.html');
 
     mhinTimeout = null;
     mhintTick = null;
