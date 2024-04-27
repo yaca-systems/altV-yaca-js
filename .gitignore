@@ -86,3 +86,5 @@ nodemon.json
 # Ignore IDE files
 .idea
 .vscode
+
+package-lock.json

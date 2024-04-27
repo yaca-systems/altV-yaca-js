@@ -1,5 +1,6 @@
 import * as alt from 'alt-server';
-
+import dotenv from "dotenv";
+dotenv.config();
 //For typescript users
 /*
 declare module "alt-server" {
@@ -37,22 +38,22 @@ declare module "alt-server" {
 
 const settings = {
     // Max Radio Channels
-    maxRadioChannels: 9, // needs to be sync with serverside setting
+    maxRadioChannels: parseInt(process.env.YACA_MAX_RADIO_CHANNELS) || 9, // needs to be sync with client setting
 
     // Unique Teamspeakserver ID
-    UNIQUE_SERVER_ID: "",
+    UNIQUE_SERVER_ID: process.env.YACA_UNIQUE_SERVER_ID || "",
 
     // Ingame Voice Channel ID
-    CHANNEL_ID: 0,
+    CHANNEL_ID: parseInt(process.env.YACA_CHANNEL_ID) || 0,
 
     // Ingame Voice Channel Password
-    CHANNEL_PASSWORD: "",
+    CHANNEL_PASSWORD: process.env.YACA_CHANNEL_PASSWORD || "",
 
     // Default Teamspeak Channel, if player can't be moved back to his old channel
-    DEFAULT_CHANNEL_ID: 1,
+    DEFAULT_CHANNEL_ID: parseInt(process.env.YACA_DEFAULT_CHANNEL_ID) || 1,
 
     // If true, it will use the teamspeak whisper system
-    USE_WHISPER: false,
+    USE_WHISPER: process.env.YACA_USE_WHISPER?.toLowerCase() == "true" || false,
 }
 
 /**
@@ -78,6 +79,9 @@ export class YaCAServerModule {
     static radioFrequencyMap = new Map();
 
     constructor() {
+        if (!settings.UNIQUE_SERVER_ID || settings.UNIQUE_SERVER_ID == "") {
+            throw Error('~r~ --> YaCA: Unique Server ID is not set! Please set it in your .env file');
+        }
         alt.log('~g~ --> YaCA: Server loaded');
         this.registerEvents();
 
@@ -169,6 +173,8 @@ export class YaCAServerModule {
         alt.on("server:yaca:callPlayer", this.callPlayer.bind(this));
         alt.on("server:yaca:callPlayerOldEffect", this.callPlayerOldEffect.bind(this));
         alt.on("server:yaca:changePlayerAliveStatus", this.changePlayerAliveStatus.bind(this));
+        alt.on("server:yaca:enablePhoneSpeaker", this.enablePhoneSpeaker.bind(this));
+        alt.on("server:yaca:muteOnPhone", this.muteOnPhone.bind(this));
 
         // YaCA: voice range toggle
         alt.onClient("server:yaca:changeVoiceRange", this.changeVoiceRange.bind(this));
