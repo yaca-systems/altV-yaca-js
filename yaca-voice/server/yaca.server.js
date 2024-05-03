@@ -441,6 +441,8 @@ export class YaCAServerModule {
             mutedOnPhone: player.voiceSettings.mutedOnPhone
         };
 
+        player.setStreamSyncedMeta("yaca:voicerange", player.voiceSettings.voiceRange);
+
         alt.emitAllClientsRaw("client:yaca:addPlayers", player.voiceplugin);
 
         const allPlayers = alt.Player.all;

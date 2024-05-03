@@ -946,6 +946,22 @@ export class YaCAClientModule {
     }
 
     /**
+     * Retrieves a variable for a player.
+     *
+     * @param {alt.Player} player - The player for whom the variable is to be retrieved.
+     * @param {string} variable - The name of the variable.
+     * @returns {*} Returns the value of the variable if the player and variable exist, undefined otherwise.
+     */
+    getPlayerVariable(player, variable) {
+        if (!player?.valid) return;
+
+        const currentData = this.getPlayerByID(player.remoteID);
+        if (!currentData) return;
+
+        return currentData[variable];
+    }
+
+    /**
      * Changes the voice range.
      *
      * @param {number} toggle - The new voice range.
