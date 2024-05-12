@@ -55,7 +55,7 @@ const CommDeviceMode = {
 
 /**
  * @typedef {Object} YacaResponse
- * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "MUTE_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT" | "HEARTBEAT"} code - The response code.
+ * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "MUTE_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT" | "HEARTBEAT", "MAX_PLAYER_COUNT_REACHED"} code - The response code.
  * @property {string} requestType - The type of the request.
  * @property {string} message - The response message.
  */
@@ -105,11 +105,12 @@ const translations = {
 
     // Error message which comes from the plugin
     "OUTDATED_VERSION": "You dont use the required plugin version!",
-    "WRONG_TS_SERVER": "You are on the wrong teamspeakserver!",
-    "NOT_CONNECTED": "You are on the wrong teamspeakserver!",
+    "WRONG_TS_SERVER": "You are on the wrong teamspeak server!",
+    "NOT_CONNECTED": "You are on the wrong teamspeak server!",
     "MOVE_ERROR": "Error while moving into ingame teamspeak channel!",
     "WAIT_GAME_INIT": "",
-    "HEARTBEAT": ""
+    "HEARTBEAT": "",
+    "MAX_PLAYER_COUNT_REACHED": "Your license reached the maximum player count. Please upgrade your license." 
 }
 
 export class YaCAClientModule {
