@@ -84,16 +84,6 @@ export class YaCAServerModule {
         }
         alt.log('~g~ --> YaCA: Server loaded');
         this.registerEvents();
-
-        // Example colshape for extendet voicerange
-        const pos = new alt.Vector3(0, 0, 70);
-        const colshape = new alt.ColshapeCylinder(pos.x, pos.y, pos.z, 10, 5);
-        colshape.playersOnly = true;
-        colshape.dimension = 0;
-        colshape.voiceRangeInfos = {
-            maxRange: 8 // Value from clientside voiceRangesEnum
-        }
-        YaCAServerModule.voiceRangesColShapes.set(1337, colshape)
     }
 
     /**
@@ -148,7 +138,7 @@ export class YaCAServerModule {
             forceMuted: false,
             ingameName: name,
             mutedOnPhone: false,
-            inCallWith: []
+            inCallWith: new Set()
         };
 
         player.radioSettings = {
@@ -643,17 +633,16 @@ export class YaCAServerModule {
         alt.emitClientRaw(target, "client:yaca:phone", player.id, state);
         alt.emitClientRaw(player, "client:yaca:phone", target.id, state);
 
-        if (!state) {
+        if (state) {
+            player.voiceSettings.inCallWith.add(target.id);
+            target.voiceSettings.inCallWith.add(player.id);
+            if (player.hasStreamSyncedMeta("yaca:phoneSpeaker")) this.enablePhoneSpeaker(player, true);
+        } else {
+            if (player.hasStreamSyncedMeta("yaca:phoneSpeaker")) this.enablePhoneSpeaker(player, false);
+            player.voiceSettings.inCallWith.delete(target.id);
+            target.voiceSettings.inCallWith.delete(player.id);
             this.muteOnPhone(player, false, true);
             this.muteOnPhone(target, false, true);
-
-            player.voiceSettings.inCallWith.push(target.id);
-            target.voiceSettings.inCallWith.push(player.id);
-        } else {
-            if (player.hasStreamSyncedMeta("yaca:phoneSpeaker")) this.enablePhoneSpeaker(player, true, [player.id, target.id]);
-
-            player.voiceSettings.inCallWith = player.voiceSettings.inCallWith.filter(id => id !== target.id);
-            target.voiceSettings.inCallWith = target.voiceSettings.inCallWith.filter(id => id !== player.id);
         }
     }
 
@@ -670,17 +659,16 @@ export class YaCAServerModule {
         alt.emitClientRaw(target, "client:yaca:phoneOld", player.id, state);
         alt.emitClientRaw(player, "client:yaca:phoneOld", target.id, state);
 
-        if (!state) {
+        if (state) {            
+            player.voiceSettings.inCallWith.add(target.id);
+            target.voiceSettings.inCallWith.add(player.id);
+            if (player.hasStreamSyncedMeta("yaca:phoneSpeaker")) this.enablePhoneSpeaker(player, true);
+        } else {            
+            if (player.hasStreamSyncedMeta("yaca:phoneSpeaker")) this.enablePhoneSpeaker(player, false);
+            player.voiceSettings.inCallWith.delete(target.id);
+            target.voiceSettings.inCallWith.delete(player.id);
             this.muteOnPhone(player, false, true);
             this.muteOnPhone(target, false, true);
-
-            player.voiceSettings.inCallWith.push(target.id);
-            target.voiceSettings.inCallWith.push(player.id);
-        } else {
-            if (player.hasStreamSyncedMeta("yaca:phoneSpeaker")) this.enablePhoneSpeaker(player, true, [player.id, target.id]);
-
-            player.voiceSettings.inCallWith = player.voiceSettings.inCallWith.filter(id => id !== target.id);
-            target.voiceSettings.inCallWith = target.voiceSettings.inCallWith.filter(id => id !== player.id);
         }
     }
 
@@ -703,13 +691,12 @@ export class YaCAServerModule {
      *
      * @param {alt.Player} player - The player to enable or disable the phone speaker for.
      * @param {boolean} state - The state of the phone speaker.
-     * @param {number[]} phoneCallMemberIds - The IDs of the members in the phone call.
      */
-    enablePhoneSpeaker(player, state, phoneCallMemberIds) {
+    enablePhoneSpeaker(player, state) {
         if (!player?.valid) return;
 
         if (state) {
-            player.setStreamSyncedMeta("yaca:phoneSpeaker", phoneCallMemberIds);
+            player.setStreamSyncedMeta("yaca:phoneSpeaker", player.voiceSettings.inCallWith);
         } else {
             player.deleteStreamSyncedMeta("yaca:phoneSpeaker");
         }

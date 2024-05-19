@@ -80,7 +80,7 @@ Mutes the player when using the phone.
 | state     | `boolean` | the mute state    |
 | onCallstop| `boolean` | is it on call stop|
 
-#### `server:yaca:enablePhoneSpeaker(player: alt.Player, state: bool, phoneCallMemberIds: number[])`
+#### `server:yaca:enablePhoneSpeaker(player: alt.Player, state: bool)`
 
 Enable or disable the phone speaker for a player.
 
@@ -88,7 +88,6 @@ Enable or disable the phone speaker for a player.
 | ---------          | --------- | ----------------------- |
 | player             | `number`  | the player source       |
 | state              | `boolean` | the phone speaker state |
-| phoneCallMemberIds | `number[]` | the phone call member ids |
 </details>
 
 # Events
