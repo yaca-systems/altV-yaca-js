@@ -31,7 +31,7 @@ using [yaca.systems](https://yaca.systems/) today!
 
 ### General
 
-#### `server:yaca:connect(alt.Player player)`
+#### `server:yaca:connect(player: alt.Player)`
 
 Connects the player to the YACA system.
 
