@@ -645,7 +645,7 @@ export class YaCAClientModule {
             }
 
             // Handle shortrange radio on stream-in
-            if (this.playersWithShortRange.has(entityID)) {
+            if (this.playersWithShortRange.has(entity.remoteID)) {
                 const channel = this.findRadioChannelByFrequency(this.playersWithShortRange.get(entityID));
                 if (channel) {
                     YaCAClientModule.setPlayersCommType(this.getPlayerByID(entityID), YacaFilterEnum.RADIO, true, channel, undefined, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
