@@ -50,7 +50,7 @@ Changes the alive status of a player. Used to forcemute player
 
 ### Phone
 
-#### `server:yaca:connect(player: alt.Player, target: alt.Player, state: bool)`
+#### `server:yaca:callPlayer(player: alt.Player, target: alt.Player, state: bool)`
 
 Creates a phone call between two players.
 
