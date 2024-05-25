@@ -143,6 +143,8 @@ export class YaCAClientModule {
     phoneSpeakerActive = false;
     currentlyPhoneSpeakerApplied = new Set();
 
+    vehicleMufflingWhitelist = new Set();
+
     useWhisper = false;
 
     webview = new alt.WebView('http://assets/yaca-ui/assets/index.html');
@@ -229,6 +231,11 @@ export class YaCAClientModule {
             lastMegaphoneState: false,
             canUseMegaphone: false,
         };
+
+        const config = JSON.parse(alt.File.read('./config.json'));
+        for (const vehicleModel of config.VehicleMufflingWhitelist) {
+            this.vehicleMufflingWhitelist.add(alt.hash(vehicleModel));
+        }
 
         this.registerEvents();
 
@@ -857,6 +864,7 @@ export class YaCAClientModule {
         if (!natives.doesVehicleHaveRoof(vehicle)) return true;
         if (natives.isVehicleAConvertible(vehicle, false) && natives.getConvertibleRoofState(vehicle) !== 0) return true;
         if (!natives.areAllVehicleWindowsIntact(vehicle)) return true;
+        if (this.vehicleMufflingWhitelist.has(vehicle.model)) return true;
 
         const doors = [];
         for (let i = 0; i < 6; i++) {
