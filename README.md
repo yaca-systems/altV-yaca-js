@@ -11,8 +11,8 @@ using [yaca.systems](https://yaca.systems/) today!
 1. Download and install the latest [release](https://github.com/yaca-systems/altV-yaca-js/archive/refs/heads/master.zip) of this
    resource.
 2. Add `'yaca-voice'` into the `ressource` section of your `server.toml`.
-3. Rename `server.config.json.example` to `server.config.json` and adjust the [variables](https://github.com/yaca-systems/altV-yaca-js/tree/master?tab=readme-ov-file#server-config) to your
-   needs.
+3. Rename `server.config.json.example` to `server.config.json` and adjust the [variables](https://github.com/yaca-systems/altV-yaca-js/tree/master?tab=readme-ov-file#server-config) to your needs.
+4. Rename `config/config.json.example` to `config.json` and adjust the [variables](https://github.com/yaca-systems/altV-yaca-js/tree/master?tab=readme-ov-file#client-config) to your needs.
 
 # Server Config
 
@@ -23,6 +23,12 @@ using [yaca.systems](https://yaca.systems/) today!
 | YACA_CHANNEL_PASSWORD | `string`   | The Password used to join the Ingame Channel                                                                           |
 | YACA_DEFAULT_CHANNEL_ID      | `number`   | The ID of the Channel where a players should be moved to when leaving Ingame                                           |
 | YACA_USE_WHISPER            | `boolean`  | If you want to use the Whisper functions of TeamSpeak, if set to `false` it mutes and unmutes the players - suggested for 500 and more Players              |
+
+# Client Config
+
+| Variable                                | Type       | Description                                                                                                                                                                                                              |
+| --------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| VehicleMufflingWhitelist                | `string[]` | Whitelist of vehicle models that should not be muffled when sitting inside a car without a window/door open.                                                                                                             |
 
 # Serverside API
 
