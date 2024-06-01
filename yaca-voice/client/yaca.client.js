@@ -8,7 +8,6 @@ declare module "alt-client" {
     export interface LocalPlayer {
         yacaPluginLocal: {
             canChangeVoiceRange: boolean;
-            maxVoiceRange: number;
 
             lastMegaphoneState: boolean;
             canUseMegaphone: boolean;
@@ -227,7 +226,6 @@ export class YaCAClientModule {
     constructor() {
         this.localPlayer.yacaPluginLocal = {
             canChangeVoiceRange: true,
-            maxVoiceRange: 4,
             lastMegaphoneState: false,
             canUseMegaphone: false,
         };
@@ -327,20 +325,6 @@ export class YaCAClientModule {
         alt.onServer("client:yaca:muteTarget", (target, muted) => {
             const player = this.getPlayerByID(target);
             if (player) player.forceMuted = muted;
-        });
-
-        /**
-         * Handles the "client:yaca:setMaxVoiceRange" server event.
-         *
-         * @param {number} maxRange - The maximum voice range to be set.
-         */
-        alt.onServer("client:yaca:setMaxVoiceRange", (maxRange) => {
-            this.localPlayer.yacaPluginLocal.maxVoiceRange = maxRange;
-
-            if (maxRange == 15) {
-                this.uirange = 4;
-                this.lastuiRange = 4;
-            }
         });
 
         /* =========== RADIO SYSTEM =========== */
@@ -991,13 +975,13 @@ export class YaCAClientModule {
 
         if (this.uirange < 1) {
             this.uirange = 1;
-        } else if (this.uirange == 5 && this.localPlayer.yacaPluginLocal.maxVoiceRange < 5) {
+        } else if (this.uirange == 5) {
             this.uirange = 4;
-        } else if (this.uirange == 6 && this.localPlayer.yacaPluginLocal.maxVoiceRange < 6) {
+        } else if (this.uirange == 6) {
             this.uirange = 5;
-        } else if (this.uirange == 7 && this.localPlayer.yacaPluginLocal.maxVoiceRange < 7) {
+        } else if (this.uirange == 7) {
             this.uirange = 6;
-        } else if (this.uirange == 8 && this.localPlayer.yacaPluginLocal.maxVoiceRange < 8) {
+        } else if (this.uirange == 8) {
             this.uirange = 7;
         } else if (this.uirange > 8) {
             this.uirange = 8;

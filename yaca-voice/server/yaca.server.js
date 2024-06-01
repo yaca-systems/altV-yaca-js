@@ -14,7 +14,6 @@ declare module "alt-server" {
         voiceSettings: {
             voiceRange: number,
             voiceFirstConnect: boolean,
-            maxVoiceRangeInMeter: number,
             forceMuted: boolean,
             ingameName: string,
         };
@@ -134,7 +133,6 @@ export class YaCAServerModule {
         player.voiceSettings = {
             voiceRange: 3,
             voiceFirstConnect: false,
-            maxVoiceRangeInMeter: 15,
             forceMuted: false,
             ingameName: name,
             mutedOnPhone: false,
@@ -337,9 +335,6 @@ export class YaCAServerModule {
      * @param {number} range - The new voice range.
      */
     changeVoiceRange(player, range) {
-        // Sanitycheck to prevent hackers or shit
-        if (player.voiceSettings.maxVoiceRangeInMeter < range) return player.emitRaw("client:yaca:setMaxVoiceRange", 15);
-
         player.voiceSettings.voiceRange = range;
         player.setStreamSyncedMeta("yaca:voicerange", player.voiceSettings.voiceRange);
 
