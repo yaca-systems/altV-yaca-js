@@ -715,7 +715,7 @@ export class YaCAClientModule {
 
     initRequest(dataObj) {
         if (!dataObj || !dataObj.suid || typeof dataObj.chid != "number"
-            || !dataObj.deChid || !dataObj.ingameName || !dataObj.channelPassword
+            || !dataObj.deChid || !dataObj.ingameName || typeof dataObj.channelPassword == "undefined"
         ) return this.radarNotification(translations.connect_error)
 
         this.sendWebsocket({
