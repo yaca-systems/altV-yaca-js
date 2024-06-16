@@ -1,6 +1,8 @@
 {
     "VehicleMufflingWhitelist": [
         "gauntlet6",
-        "draugur"
+        "draugur",
+        "bodhi2",
+        "vagrant"
     ]
 }
