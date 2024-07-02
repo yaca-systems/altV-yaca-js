@@ -139,7 +139,9 @@ export class YaCAClientModule {
     playersWithShortRange = new Map();
     playersInRadioChannel = new Map();
 
+    inCall = false;
     phoneSpeakerActive = false;
+    currentlySendingPhoneSpeakerSender = new Set();
     currentlyPhoneSpeakerApplied = new Set();
 
     vehicleMufflingWhitelist = new Set();
