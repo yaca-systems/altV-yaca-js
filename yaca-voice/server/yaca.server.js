@@ -641,7 +641,7 @@ export class YaCAServerModule {
         if (!player?.valid) return;
 
         if (state) {
-            player.setStreamSyncedMeta("yaca:phoneSpeaker", player.voiceSettings.inCallWith);
+            player.setStreamSyncedMeta("yaca:phoneSpeaker", Array.from(player.voiceSettings.inCallWith));
         } else {
             player.deleteStreamSyncedMeta("yaca:phoneSpeaker");
         }
