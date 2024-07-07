@@ -1465,16 +1465,13 @@ export class YaCAClientModule {
 
         let targets = [];
         for (const targetID of targetIDs) {
+            if (!state) this.inCall.delete(targetID);
+
             const target = this.getPlayerByID(targetID);
             if (!target) continue;
 
             targets.push(target);
-            
-            if (state) {
-                this.inCall.add(targetID);
-            } else {
-                this.inCall.delete(targetID);
-            }
+            if (state) this.inCall.add(targetID);
         }
 
         YaCAClientModule.setPlayersCommType(targets, filter, state, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
