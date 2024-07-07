@@ -296,6 +296,7 @@ export class YaCAClientModule {
 
         alt.onServer("client:yaca:disconnect", (remoteID) => {
             YaCAClientModule.allPlayers.delete(remoteID);
+            this.inCall.delete(remoteID);
         });
 
         alt.onServer("client:yaca:addPlayers", (dataObjects) => {
