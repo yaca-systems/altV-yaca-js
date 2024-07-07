@@ -301,6 +301,7 @@ export class YaCAClientModule {
         alt.onServer("client:yaca:addPlayers", (dataObjects) => {
             if (!Array.isArray(dataObjects)) dataObjects = [dataObjects];
 
+            let enablePhoneCall = false;
             for (const dataObj of dataObjects) {
                 if (!dataObj || typeof dataObj.range == "undefined" || typeof dataObj.clientId == "undefined" || typeof dataObj.playerId == "undefined") continue;
 
@@ -315,9 +316,13 @@ export class YaCAClientModule {
                     phoneCallMemberIds: currentData?.phoneCallMemberIds || undefined,
                     mutedOnPhone: dataObj.mutedOnPhone,
                 })
+
+                if (this.inCall.has(dataObj.playerId)) {
+                    enablePhoneCall = true;
+                }
             }
 
-            this.enablePhoneCall(Array.from(this.inCall), true);
+            if (enablePhoneCall) this.enablePhoneCall(Array.from(this.inCall), true);
         });
 
         /**
