@@ -1469,7 +1469,12 @@ export class YaCAClientModule {
             if (!target) continue;
 
             targets.push(target);
-            this.inCall.add(targetID);
+            
+            if (state) {
+                this.inCall.add(targetID);
+            } else {
+                this.inCall.delete(targetID);
+            }
         }
 
         YaCAClientModule.setPlayersCommType(targets, filter, state, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
