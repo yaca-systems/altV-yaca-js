@@ -139,7 +139,7 @@ export class YaCAClientModule {
     playersWithShortRange = new Map();
     playersInRadioChannel = new Map();
 
-    inCall = false;
+    inCall = new Set();
     phoneSpeakerActive = false;
     currentlySendingPhoneSpeakerSender = new Set();
     currentlyPhoneSpeakerApplied = new Set();
@@ -316,6 +316,8 @@ export class YaCAClientModule {
                     mutedOnPhone: dataObj.mutedOnPhone,
                 })
             }
+
+            this.enablePhoneCall(Array.from(this.inCall), true);
         });
 
         /**
@@ -521,13 +523,10 @@ export class YaCAClientModule {
          * @param {number} targetID - The ID of the target.
          * @param {boolean} state - The state of the phone.
          */
-        alt.onServer("client:yaca:phone", (targetID, state) => {
-            const target = this.getPlayerByID(targetID);
-            if (!target) return;
+        alt.onServer("client:yaca:phone", (targetIDs, state) => {
+            if (!Array.isArray(targetIDs)) targetIDs = [targetIDs];
 
-            this.inCall = state;
-
-            YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE, state, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
+            this.enablePhoneCall(targetIDs, state, YacaFilterEnum.PHONE);
         });
 
         /**
@@ -536,13 +535,10 @@ export class YaCAClientModule {
          * @param {number} targetID - The ID of the target.
          * @param {boolean} state - The state of the phone.
          */
-        alt.onServer("client:yaca:phoneOld", (targetID, state) => {
-            const target = this.getPlayerByID(targetID);
-            if (!target) return;
+        alt.onServer("client:yaca:phoneOld", (targetIDs, state) => {
+            if (!Array.isArray(targetIDs)) targetIDs = [targetIDs];
 
-            this.inCall = state;
-
-            YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE_HISTORICAL, state, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
+            this.enablePhoneCall(targetIDs, state, YacaFilterEnum.PHONE_HISTORICAL);
         });
 
         alt.onServer("client:yaca:phoneMute", (targetID, state, onCallstop = false) => {
@@ -1211,7 +1207,7 @@ export class YaCAClientModule {
 
             
             // Phone speaker handling - user who enabled it.
-            if (this.useWhisper && this.phoneSpeakerActive && this.inCall && localPos.distanceTo(player.pos) <= settings.maxPhoneSpeakerRange) {
+            if (this.useWhisper && this.phoneSpeakerActive && this.inCall.size && localPos.distanceTo(player.pos) <= settings.maxPhoneSpeakerRange) {
                 playersToPhoneSpeaker.add(player.remoteID);
             }
     
@@ -1243,7 +1239,7 @@ export class YaCAClientModule {
             }
         }
 
-        if (this.useWhisper && ((this.phoneSpeakerActive && this.inCall) || ((!this.phoneSpeakerActive || !this.inCall) && this.currentlySendingPhoneSpeakerSender.size))) {
+        if (this.useWhisper && ((this.phoneSpeakerActive && this.inCall.size) || ((!this.phoneSpeakerActive || !this.inCall.size) && this.currentlySendingPhoneSpeakerSender.size))) {
             const playersToNotReceivePhoneSpeaker = [...this.currentlySendingPhoneSpeakerSender].filter(playerId => !playersToPhoneSpeaker.has(playerId));
             const playersNeedsReceivePhoneSpeaker = [...playersToPhoneSpeaker].filter(playerId => !this.currentlySendingPhoneSpeakerSender.has(playerId));
 
@@ -1456,6 +1452,21 @@ export class YaCAClientModule {
         YaCAClientModule.setPlayersCommType(playersToSet, YacaFilterEnum.PHONE_SPEAKER, false);
     
         delete entityData.phoneCallMemberIds;
+    }
+
+    enablePhoneCall(targetIDs, state, filter = YacaFilterEnum.PHONE) {
+        if (!targetIDs.length) return;
+
+        let targets = [];
+        for (const targetID of targetIDs) {
+            const target = this.getPlayerByID(targetID);
+            if (!target) continue;
+
+            targets.push(target);
+            this.inCall.add(targetID);
+        }
+
+        YaCAClientModule.setPlayersCommType(targets, filter, state, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
     }
 
     /* ======================== MEGAPHONE SYSTEM ======================== */
