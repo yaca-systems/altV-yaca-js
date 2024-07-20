@@ -1161,11 +1161,9 @@ export class YaCAClientModule {
     handleTalkState(payload) {
         // Update state if player is muted or not
         if (payload.code === "SOUND_STATE") {
-            this.isPlayerMuted = (
-                payload.message.microphoneMuted || payload.message.microphoneDisabled
-                || payload.message.soundMuted || payload.message.soundDisabled
-            );
-    
+            const states = JSON.parse(payload.message);
+            this.isPlayerMuted = states.microphoneMuted || states.microphoneDisabled || states.soundMuted || states.soundDisabled;
+
             this.webview.emit('webview:hud:voiceDistance', this.isPlayerMuted ? 0 : voiceRangesEnum[this.uirange]);
         }
         
