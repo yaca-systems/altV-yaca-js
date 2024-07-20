@@ -109,7 +109,8 @@ const translations = {
     "MOVE_ERROR": "Error while moving into ingame teamspeak channel!",
     "WAIT_GAME_INIT": "",
     "HEARTBEAT": "",
-    "MAX_PLAYER_COUNT_REACHED": "Your license reached the maximum player count. Please upgrade your license." 
+    "MAX_PLAYER_COUNT_REACHED": "Your license reached the maximum player count. Please upgrade your license.",
+    "MUTE_STATE": "MUTE_STATE Is deprecated, please use SOUND_STATE instead.",
 }
 
 export class YaCAClientModule {
@@ -805,7 +806,7 @@ export class YaCAClientModule {
             return;
         }
 
-        if (payload.code === "TALK_STATE" || payload.code === "MUTE_STATE") {
+        if (payload.code === "TALK_STATE" || payload.code === "SOUND_STATE") {
             this.handleTalkState(payload);
             return;
         }
@@ -1166,8 +1167,12 @@ export class YaCAClientModule {
      */
     handleTalkState(payload) {
         // Update state if player is muted or not
-        if (payload.code === "MUTE_STATE") {
-            this.isPlayerMuted = !!parseInt(payload.message);
+        if (payload.code === "SOUND_STATE") {
+            this.isPlayerMuted = (
+                payload.message.microphoneMuted || payload.message.microphoneDisabled
+                || payload.message.soundMuted || payload.message.soundDisabled
+            );
+    
             this.webview.emit('webview:hud:voiceDistance', this.isPlayerMuted ? 0 : voiceRangesEnum[this.uirange]);
         }
         
