@@ -103,11 +103,11 @@ Enable or disable the phone speaker for a player.
 
 #### `YACA:DISCONNECTED_FROM_WEBSOCKET`
 
-Emits when the player is disconnected from the Teamspeak server or disabled the plugin.
+Emits when the player disabled the plugin.
 
 #### `YACA:CONNECTED_TO_WEBSOCKET`
 
-Emits when the player connected to the Teamspeak server or enabled the plugin.
+Emits when the player enabled the plugin.
 </details>
 
 <details>
