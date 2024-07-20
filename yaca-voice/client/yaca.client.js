@@ -110,7 +110,8 @@ const translations = {
     "WAIT_GAME_INIT": "",
     "HEARTBEAT": "",
     "MAX_PLAYER_COUNT_REACHED": "Your license reached the maximum player count. Please upgrade your license.",
-    "MUTE_STATE": "", //Deprecated
+    "MUTE_STATE": "", //Deprecated,
+    "MOVED_CHANNEL": ""
 }
 
 export class YaCAClientModule {
