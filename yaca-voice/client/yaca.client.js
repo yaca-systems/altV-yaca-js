@@ -8,7 +8,6 @@ declare module "alt-client" {
     export interface LocalPlayer {
         yacaPluginLocal: {
             canChangeVoiceRange: boolean;
-            maxVoiceRange: number;
 
             lastMegaphoneState: boolean;
             canUseMegaphone: boolean;
@@ -141,8 +140,12 @@ export class YaCAClientModule {
     playersWithShortRange = new Map();
     playersInRadioChannel = new Map();
 
+    inCall = new Set();
     phoneSpeakerActive = false;
+    currentlySendingPhoneSpeakerSender = new Set();
     currentlyPhoneSpeakerApplied = new Set();
+
+    vehicleMufflingWhitelist = new Set();
 
     useWhisper = false;
 
@@ -226,10 +229,14 @@ export class YaCAClientModule {
     constructor() {
         this.localPlayer.yacaPluginLocal = {
             canChangeVoiceRange: true,
-            maxVoiceRange: 4,
             lastMegaphoneState: false,
             canUseMegaphone: false,
         };
+
+        const config = JSON.parse(alt.File.read('./config.json'));
+        for (const vehicleModel of config.VehicleMufflingWhitelist) {
+            this.vehicleMufflingWhitelist.add(alt.hash(vehicleModel));
+        }
 
         this.registerEvents();
 
@@ -263,7 +270,10 @@ export class YaCAClientModule {
                 });
 
                 this.websocket.on('error', reason => alt.logError('[YACA-Websocket] Error: ', reason));
-                this.websocket.on('close', (code, reason) => alt.logError('[YACA-Websocket]: client disconnected', code, reason));
+                this.websocket.on('close', (code, reason) => {
+                    alt.emit("YACA:DISCONNECTED_FROM_WEBSOCKET");
+                    alt.logError('[YACA-Websocket]: client disconnected', code, reason)
+                });
                 this.websocket.on('open', () => {
                     if (this.firstConnect) {
                         this.initRequest(dataObj);
@@ -271,6 +281,8 @@ export class YaCAClientModule {
                     } else {
                         alt.emitServerRaw("server:yaca:wsReady", this.firstConnect);
                     }
+
+                    alt.emit("YACA:CONNECTED_TO_WEBSOCKET");
 
                     alt.log('[YACA-Websocket]: connected');
                 });
@@ -290,11 +302,13 @@ export class YaCAClientModule {
 
         alt.onServer("client:yaca:disconnect", (remoteID) => {
             YaCAClientModule.allPlayers.delete(remoteID);
+            this.inCall.delete(remoteID);
         });
 
         alt.onServer("client:yaca:addPlayers", (dataObjects) => {
             if (!Array.isArray(dataObjects)) dataObjects = [dataObjects];
 
+            let enablePhoneCall = false;
             for (const dataObj of dataObjects) {
                 if (!dataObj || typeof dataObj.range == "undefined" || typeof dataObj.clientId == "undefined" || typeof dataObj.playerId == "undefined") continue;
 
@@ -309,7 +323,13 @@ export class YaCAClientModule {
                     phoneCallMemberIds: currentData?.phoneCallMemberIds || undefined,
                     mutedOnPhone: dataObj.mutedOnPhone,
                 })
+
+                if (this.inCall.has(dataObj.playerId)) {
+                    enablePhoneCall = true;
+                }
             }
+
+            if (enablePhoneCall) this.enablePhoneCall(Array.from(this.inCall), true);
         });
 
         /**
@@ -321,20 +341,6 @@ export class YaCAClientModule {
         alt.onServer("client:yaca:muteTarget", (target, muted) => {
             const player = this.getPlayerByID(target);
             if (player) player.forceMuted = muted;
-        });
-
-        /**
-         * Handles the "client:yaca:setMaxVoiceRange" server event.
-         *
-         * @param {number} maxRange - The maximum voice range to be set.
-         */
-        alt.onServer("client:yaca:setMaxVoiceRange", (maxRange) => {
-            this.localPlayer.yacaPluginLocal.maxVoiceRange = maxRange;
-
-            if (maxRange == 15) {
-                this.uirange = 4;
-                this.lastuiRange = 4;
-            }
         });
 
         /* =========== RADIO SYSTEM =========== */
@@ -529,13 +535,10 @@ export class YaCAClientModule {
          * @param {number} targetID - The ID of the target.
          * @param {boolean} state - The state of the phone.
          */
-        alt.onServer("client:yaca:phone", (targetID, state) => {
-            const target = this.getPlayerByID(targetID);
-            if (!target) return;
+        alt.onServer("client:yaca:phone", (targetIDs, state) => {
+            if (!Array.isArray(targetIDs)) targetIDs = [targetIDs];
 
-            this.inCall = state;
-
-            YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE, state, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
+            this.enablePhoneCall(targetIDs, state, YacaFilterEnum.PHONE);
         });
 
         /**
@@ -544,13 +547,10 @@ export class YaCAClientModule {
          * @param {number} targetID - The ID of the target.
          * @param {boolean} state - The state of the phone.
          */
-        alt.onServer("client:yaca:phoneOld", (targetID, state) => {
-            const target = this.getPlayerByID(targetID);
-            if (!target) return;
+        alt.onServer("client:yaca:phoneOld", (targetIDs, state) => {
+            if (!Array.isArray(targetIDs)) targetIDs = [targetIDs];
 
-            this.inCall = state;
-
-            YaCAClientModule.setPlayersCommType(target, YacaFilterEnum.PHONE_HISTORICAL, state, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
+            this.enablePhoneCall(targetIDs, state, YacaFilterEnum.PHONE_HISTORICAL);
         });
 
         alt.onServer("client:yaca:phoneMute", (targetID, state, onCallstop = false) => {
@@ -646,7 +646,7 @@ export class YaCAClientModule {
             }
 
             // Handle shortrange radio on stream-in
-            if (this.playersWithShortRange.has(entityID)) {
+            if (this.playersWithShortRange.has(entity.remoteID)) {
                 const channel = this.findRadioChannelByFrequency(this.playersWithShortRange.get(entityID));
                 if (channel) {
                     YaCAClientModule.setPlayersCommType(this.getPlayerByID(entityID), YacaFilterEnum.RADIO, true, channel, undefined, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
@@ -725,7 +725,7 @@ export class YaCAClientModule {
 
     initRequest(dataObj) {
         if (!dataObj || !dataObj.suid || typeof dataObj.chid != "number"
-            || !dataObj.deChid || !dataObj.ingameName || !dataObj.channelPassword
+            || !dataObj.deChid || !dataObj.ingameName || typeof dataObj.channelPassword == "undefined"
         ) return this.radarNotification(translations.connect_error)
 
         this.sendWebsocket({
@@ -788,7 +788,6 @@ export class YaCAClientModule {
         if (payload.code === "OK") {
             if (payload.requestType === "JOIN") {
                 alt.emitServerRaw("server:yaca:addPlayer", parseInt(payload.message));
-
                 if (this.rangeInterval) {
                     alt.clearInterval(this.rangeInterval);
                     this.rangeInterval = null;
@@ -798,6 +797,8 @@ export class YaCAClientModule {
 
                 // Set radio settings on reconnect only, else on first opening
                 if (this.radioInited) this.initRadioSettings();
+
+                alt.emit("YACA:JOINED_INGAME_CHANNEL");
                 return;
             }
 
@@ -858,6 +859,7 @@ export class YaCAClientModule {
         if (!natives.doesVehicleHaveRoof(vehicle)) return true;
         if (natives.isVehicleAConvertible(vehicle, false) && natives.getConvertibleRoofState(vehicle) !== 0) return true;
         if (!natives.areAllVehicleWindowsIntact(vehicle)) return true;
+        if (this.vehicleMufflingWhitelist.has(vehicle.model)) return true;
 
         const doors = [];
         for (let i = 0; i < 6; i++) {
@@ -984,13 +986,13 @@ export class YaCAClientModule {
 
         if (this.uirange < 1) {
             this.uirange = 1;
-        } else if (this.uirange == 5 && this.localPlayer.yacaPluginLocal.maxVoiceRange < 5) {
+        } else if (this.uirange == 5) {
             this.uirange = 4;
-        } else if (this.uirange == 6 && this.localPlayer.yacaPluginLocal.maxVoiceRange < 6) {
+        } else if (this.uirange == 6) {
             this.uirange = 5;
-        } else if (this.uirange == 7 && this.localPlayer.yacaPluginLocal.maxVoiceRange < 7) {
+        } else if (this.uirange == 7) {
             this.uirange = 6;
-        } else if (this.uirange == 8 && this.localPlayer.yacaPluginLocal.maxVoiceRange < 8) {
+        } else if (this.uirange == 8) {
             this.uirange = 7;
         } else if (this.uirange > 8) {
             this.uirange = 8;
@@ -1218,7 +1220,7 @@ export class YaCAClientModule {
 
             
             // Phone speaker handling - user who enabled it.
-            if (this.useWhisper && this.phoneSpeakerActive && this.inCall && localPos.distanceTo(player.pos) <= settings.maxPhoneSpeakerRange) {
+            if (this.useWhisper && this.phoneSpeakerActive && this.inCall.size && localPos.distanceTo(player.pos) <= settings.maxPhoneSpeakerRange) {
                 playersToPhoneSpeaker.add(player.remoteID);
             }
     
@@ -1250,7 +1252,7 @@ export class YaCAClientModule {
             }
         }
 
-        if (this.useWhisper && ((this.phoneSpeakerActive && this.inCall) || ((!this.phoneSpeakerActive || !this.inCall) && this.currentlySendingPhoneSpeakerSender.size))) {
+        if (this.useWhisper && ((this.phoneSpeakerActive && this.inCall.size) || ((!this.phoneSpeakerActive || !this.inCall.size) && this.currentlySendingPhoneSpeakerSender.size))) {
             const playersToNotReceivePhoneSpeaker = [...this.currentlySendingPhoneSpeakerSender].filter(playerId => !playersToPhoneSpeaker.has(playerId));
             const playersNeedsReceivePhoneSpeaker = [...playersToPhoneSpeaker].filter(playerId => !this.currentlySendingPhoneSpeakerSender.has(playerId));
 
@@ -1463,6 +1465,23 @@ export class YaCAClientModule {
         YaCAClientModule.setPlayersCommType(playersToSet, YacaFilterEnum.PHONE_SPEAKER, false);
     
         delete entityData.phoneCallMemberIds;
+    }
+
+    enablePhoneCall(targetIDs, state, filter = YacaFilterEnum.PHONE) {
+        if (!targetIDs.length) return;
+
+        let targets = [];
+        for (const targetID of targetIDs) {
+            if (!state) this.inCall.delete(targetID);
+
+            const target = this.getPlayerByID(targetID);
+            if (!target) continue;
+
+            targets.push(target);
+            if (state) this.inCall.add(targetID);
+        }
+
+        YaCAClientModule.setPlayersCommType(targets, filter, state, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
     }
 
     /* ======================== MEGAPHONE SYSTEM ======================== */
