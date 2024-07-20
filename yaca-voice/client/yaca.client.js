@@ -54,7 +54,7 @@ const CommDeviceMode = {
 
 /**
  * @typedef {Object} YacaResponse
- * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "MUTE_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT" | "HEARTBEAT", "MAX_PLAYER_COUNT_REACHED"} code - The response code.
+ * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "SOUND_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT" | "HEARTBEAT" | "MAX_PLAYER_COUNT_REACHED" | "MOVED_CHANNEL"} code - The response code.
  * @property {string} requestType - The type of the request.
  * @property {string} message - The response message.
  */
@@ -810,12 +810,17 @@ export class YaCAClientModule {
             return;
         }
 
+        if (payload.code === "MOVED_CHANNEL") {
+            alt.emit("YACA:MOVED_CHANNEL", payload.message);
+            return;
+        }
+
         const message = translations[payload.code] ?? "Unknown error!";
         if (typeof translations[payload.code] == "undefined") alt.log(`[YaCA-Websocket]: Unknown error code: ${payload.code}`);
         if (message.length < 1) return;
 
         natives.beginTextCommandThefeedPost("STRING");
-        natives.addTextComponentSubstringPlayerName(`Voice: ${message}`);
+        natives.addTextComponentSubstringPlayerName(`YACA-Voice: ${message}`);
         natives.thefeedSetBackgroundColorForNextPost(6);
         natives.endTextCommandThefeedPostTicker(false, false);
     }

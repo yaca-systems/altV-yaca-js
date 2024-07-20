@@ -113,6 +113,13 @@ Emits when the player enabled the plugin.
 
 Emits  when the player joined the ingamechannel.
 
+#### `YACA:MOVED_CHANNEL`
+
+Emits when the player moved a channel.
+
+| Parameter          | Type      | Description             |
+| ---------          | --------- | ----------------------- |
+| Type             | `string`  | INGAME_CHANNEL, EXCLUDED_CHANNEL       |
 </details>
 
 <details>
