@@ -985,14 +985,6 @@ export class YaCAClientModule {
 
         if (this.uirange < 1) {
             this.uirange = 1;
-        } else if (this.uirange == 5) {
-            this.uirange = 4;
-        } else if (this.uirange == 6) {
-            this.uirange = 5;
-        } else if (this.uirange == 7) {
-            this.uirange = 6;
-        } else if (this.uirange == 8) {
-            this.uirange = 7;
         } else if (this.uirange > 8) {
             this.uirange = 8;
         }
