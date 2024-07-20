@@ -108,6 +108,11 @@ Emits when the player disabled the plugin.
 #### `YACA:CONNECTED_TO_WEBSOCKET`
 
 Emits when the player enabled the plugin.
+
+#### `YACA:JOINED_INGAME_CHANNEL`
+
+Emits  when the player joined the ingamechannel.
+
 </details>
 
 <details>

@@ -787,7 +787,6 @@ export class YaCAClientModule {
         if (payload.code === "OK") {
             if (payload.requestType === "JOIN") {
                 alt.emitServerRaw("server:yaca:addPlayer", parseInt(payload.message));
-
                 if (this.rangeInterval) {
                     alt.clearInterval(this.rangeInterval);
                     this.rangeInterval = null;
@@ -797,6 +796,8 @@ export class YaCAClientModule {
 
                 // Set radio settings on reconnect only, else on first opening
                 if (this.radioInited) this.initRadioSettings();
+
+                alt.emit("YACA:JOINED_INGAME_CHANNEL");
                 return;
             }
 
