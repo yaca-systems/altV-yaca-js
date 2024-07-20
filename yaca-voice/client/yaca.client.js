@@ -269,7 +269,10 @@ export class YaCAClientModule {
                 });
 
                 this.websocket.on('error', reason => alt.logError('[YACA-Websocket] Error: ', reason));
-                this.websocket.on('close', (code, reason) => alt.logError('[YACA-Websocket]: client disconnected', code, reason));
+                this.websocket.on('close', (code, reason) => {
+                    alt.emit("YACA:DISCONNECTED_FROM_WEBSOCKET");
+                    alt.logError('[YACA-Websocket]: client disconnected', code, reason)
+                });
                 this.websocket.on('open', () => {
                     if (this.firstConnect) {
                         this.initRequest(dataObj);
@@ -277,6 +280,8 @@ export class YaCAClientModule {
                     } else {
                         alt.emitServerRaw("server:yaca:wsReady", this.firstConnect);
                     }
+
+                    alt.emit("YACA:CONNECTED_TO_WEBSOCKET");
 
                     alt.log('[YACA-Websocket]: connected');
                 });
