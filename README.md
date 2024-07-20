@@ -115,7 +115,7 @@ Emits  when the player joined the ingamechannel.
 
 #### `YACA:MOVED_CHANNEL`
 
-Emits when the player moved a channel.
+Emits when the player moved to a channel.
 
 | Parameter          | Type      | Description             |
 | ---------          | --------- | ----------------------- |
