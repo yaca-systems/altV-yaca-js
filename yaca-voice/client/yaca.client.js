@@ -54,7 +54,7 @@ const CommDeviceMode = {
 
 /**
  * @typedef {Object} YacaResponse
- * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "SOUND_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT" | "HEARTBEAT" | "MAX_PLAYER_COUNT_REACHED" | "MOVED_CHANNEL"} code - The response code.
+ * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "SOUND_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT" | "HEARTBEAT" | "MAX_PLAYER_COUNT_REACHED" | "MOVED_CHANNEL" | "OTHER_TALK_STATE"} code - The response code.
  * @property {string} requestType - The type of the request.
  * @property {string} message - The response message.
  */
@@ -111,7 +111,8 @@ const translations = {
     "HEARTBEAT": "",
     "MAX_PLAYER_COUNT_REACHED": "Your license reached the maximum player count. Please upgrade your license.",
     "MUTE_STATE": "", //Deprecated,
-    "MOVED_CHANNEL": ""
+    "MOVED_CHANNEL": "",
+    "OTHER_TALK_STATE": ""
 }
 
 export class YaCAClientModule {
@@ -148,6 +149,7 @@ export class YaCAClientModule {
     currentlyPhoneSpeakerApplied = new Set();
 
     vehicleMufflingWhitelist = new Set();
+    useLocalLipsync = false;
 
     useWhisper = false;
 
@@ -239,6 +241,8 @@ export class YaCAClientModule {
         for (const vehicleModel of config.VehicleMufflingWhitelist) {
             this.vehicleMufflingWhitelist.add(alt.hash(vehicleModel));
         }
+
+        this.useLocalLipsync = config.UseLocalLipsync ?? false;
 
         this.registerEvents();
 
@@ -807,7 +811,7 @@ export class YaCAClientModule {
             return;
         }
 
-        if (payload.code === "TALK_STATE" || payload.code === "SOUND_STATE") {
+        if (payload.code === "TALK_STATE" || payload.code === "SOUND_STATE" || payload.code === "OTHER_TALK_STATE") {
             this.handleTalkState(payload);
             return;
         }
@@ -1166,15 +1170,36 @@ export class YaCAClientModule {
 
             this.webview.emit('webview:hud:voiceDistance', this.isPlayerMuted ? 0 : voiceRangesEnum[this.uirange]);
         }
+
+        if (this.useLocalLipsync && payload.code === "OTHER_TALK_STATE") {
+            const data = JSON.parse(payload.message);
+            let remoteID = undefined;
+            const allPlayers = YaCAClientModule.allPlayers;
+            for (const [key, playerData] of allPlayers) {
+                if (playerData.clientId == data.clientId) {
+                    remoteID = key;
+                    break;
+                }
+            }
+
+            const player = alt.Player.getByRemoteID(remoteID);
+            if (player?.valid) this.syncLipsPlayer(player, !!data.isTalking);
+        }
         
-        const isTalking = !this.isPlayerMuted && !!parseInt(payload.message);
-        if (this.isTalking != isTalking) {
-            this.isTalking = isTalking;
+        if (payload.code != "OTHER_TALK_STATE") {
+            const isTalking = !this.isPlayerMuted && !!parseInt(payload.message);
+            if (this.isTalking != isTalking) {
+                this.isTalking = isTalking;
 
-            this.webview.emit('webview:hud:isTalking', isTalking);
+                this.webview.emit('webview:hud:isTalking', isTalking);
 
-            // TODO: Deprecated if alt:V syncs the playFacialAnim native
-            alt.emitServerRaw("server:yaca:lipsync", isTalking)
+                // TODO: Deprecated if alt:V syncs the playFacialAnim native
+                if (!this.useLocalLipsync) {
+                    alt.emitServerRaw("server:yaca:lipsync", isTalking)
+                } else {
+                    this.syncLipsPlayer(this.localPlayer, isTalking);
+                }
+            }
         }
     }
 
