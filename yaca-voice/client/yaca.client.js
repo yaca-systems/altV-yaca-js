@@ -1169,6 +1169,7 @@ export class YaCAClientModule {
             this.isPlayerMuted = states.microphoneMuted || states.microphoneDisabled || states.soundMuted || states.soundDisabled;
 
             this.webview.emit('webview:hud:voiceDistance', this.isPlayerMuted ? 0 : voiceRangesEnum[this.uirange]);
+            alt.emit("YACA:SOUND_STATE_CHANGED", payload.message);
         }
 
         if (this.useLocalLipsync && payload.code === "OTHER_TALK_STATE") {
