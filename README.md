@@ -128,7 +128,7 @@ Emits when the own player changed the microphone or speaker state.
 
 | Parameter          | Type      | Description             |
 | ---------          | --------- | ----------------------- |
-| States             | `string`  | Represents the current state of microphone and speaker as json      |
+| States             | `string`  | Represents the current state of microphone and speaker as json (microphoneMuted, microphoneDisabled, soundMuted, soundDisabled)      |
 </details>
 
 <details>
