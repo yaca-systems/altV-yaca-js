@@ -29,6 +29,7 @@ using [yaca.systems](https://yaca.systems/) today!
 | Variable                                | Type       | Description                                                                                                                                                                                                              |
 | --------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | VehicleMufflingWhitelist                | `string[]` | Whitelist of vehicle models that should not be muffled when sitting inside a car without a window/door open.                                                                                                             |
+| UseLocalLipsync                         | `boolean`  | Sync lips via server or client, UseLocalLipsync false is suggested in the most cases          |
 
 # Serverside API
 
@@ -113,6 +114,21 @@ Emits when the player enabled the plugin.
 
 Emits  when the player joined the ingamechannel.
 
+#### `YACA:MOVED_CHANNEL`
+
+Emits when the own player moved into a channel.
+
+| Parameter          | Type      | Description             |
+| ---------          | --------- | ----------------------- |
+| Type             | `string`  | INGAME_CHANNEL, EXCLUDED_CHANNEL       |
+
+#### `YACA:SOUND_STATE_CHANGED`
+
+Emits when the own player changed the microphone or speaker state.
+
+| Parameter          | Type      | Description             |
+| ---------          | --------- | ----------------------- |
+| States             | `string`  | Represents the current state of microphone and speaker as json (microphoneMuted, microphoneDisabled, soundMuted, soundDisabled)      |
 </details>
 
 <details>

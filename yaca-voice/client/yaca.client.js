@@ -54,7 +54,7 @@ const CommDeviceMode = {
 
 /**
  * @typedef {Object} YacaResponse
- * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "MUTE_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT" | "HEARTBEAT"} code - The response code.
+ * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "SOUND_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT" | "HEARTBEAT" | "MAX_PLAYER_COUNT_REACHED" | "MOVED_CHANNEL" | "OTHER_TALK_STATE"} code - The response code.
  * @property {string} requestType - The type of the request.
  * @property {string} message - The response message.
  */
@@ -104,11 +104,15 @@ const translations = {
 
     // Error message which comes from the plugin
     "OUTDATED_VERSION": "You dont use the required plugin version!",
-    "WRONG_TS_SERVER": "You are on the wrong teamspeakserver!",
-    "NOT_CONNECTED": "You are on the wrong teamspeakserver!",
+    "WRONG_TS_SERVER": "You are on the wrong teamspeak server!",
+    "NOT_CONNECTED": "You are on the wrong teamspeak server!",
     "MOVE_ERROR": "Error while moving into ingame teamspeak channel!",
     "WAIT_GAME_INIT": "",
-    "HEARTBEAT": ""
+    "HEARTBEAT": "",
+    "MAX_PLAYER_COUNT_REACHED": "Your license reached the maximum player count. Please upgrade your license.",
+    "MUTE_STATE": "", //Deprecated,
+    "MOVED_CHANNEL": "",
+    "OTHER_TALK_STATE": ""
 }
 
 export class YaCAClientModule {
@@ -145,6 +149,7 @@ export class YaCAClientModule {
     currentlyPhoneSpeakerApplied = new Set();
 
     vehicleMufflingWhitelist = new Set();
+    useLocalLipsync = false;
 
     useWhisper = false;
 
@@ -236,6 +241,8 @@ export class YaCAClientModule {
         for (const vehicleModel of config.VehicleMufflingWhitelist) {
             this.vehicleMufflingWhitelist.add(alt.hash(vehicleModel));
         }
+
+        this.useLocalLipsync = config.UseLocalLipsync ?? false;
 
         this.registerEvents();
 
@@ -804,8 +811,13 @@ export class YaCAClientModule {
             return;
         }
 
-        if (payload.code === "TALK_STATE" || payload.code === "MUTE_STATE") {
+        if (payload.code === "TALK_STATE" || payload.code === "SOUND_STATE" || payload.code === "OTHER_TALK_STATE") {
             this.handleTalkState(payload);
+            return;
+        }
+
+        if (payload.code === "MOVED_CHANNEL") {
+            alt.emit("YACA:MOVED_CHANNEL", payload.message);
             return;
         }
 
@@ -814,7 +826,7 @@ export class YaCAClientModule {
         if (message.length < 1) return;
 
         natives.beginTextCommandThefeedPost("STRING");
-        natives.addTextComponentSubstringPlayerName(`Voice: ${message}`);
+        natives.addTextComponentSubstringPlayerName(`YACA-Voice: ${message}`);
         natives.thefeedSetBackgroundColorForNextPost(6);
         natives.endTextCommandThefeedPostTicker(false, false);
     }
@@ -1152,19 +1164,43 @@ export class YaCAClientModule {
      */
     handleTalkState(payload) {
         // Update state if player is muted or not
-        if (payload.code === "MUTE_STATE") {
-            this.isPlayerMuted = !!parseInt(payload.message);
+        if (payload.code === "SOUND_STATE") {
+            const states = JSON.parse(payload.message);
+            this.isPlayerMuted = states.microphoneMuted || states.microphoneDisabled || states.soundMuted || states.soundDisabled;
+
             this.webview.emit('webview:hud:voiceDistance', this.isPlayerMuted ? 0 : voiceRangesEnum[this.uirange]);
+            alt.emit("YACA:SOUND_STATE_CHANGED", payload.message);
+        }
+
+        if (this.useLocalLipsync && payload.code === "OTHER_TALK_STATE") {
+            const data = JSON.parse(payload.message);
+            let remoteID = undefined;
+            const allPlayers = YaCAClientModule.allPlayers;
+            for (const [key, playerData] of allPlayers) {
+                if (playerData.clientId == data.clientId) {
+                    remoteID = key;
+                    break;
+                }
+            }
+
+            const player = alt.Player.getByRemoteID(remoteID);
+            if (player?.valid) this.syncLipsPlayer(player, !!data.isTalking);
         }
         
-        const isTalking = !this.isPlayerMuted && !!parseInt(payload.message);
-        if (this.isTalking != isTalking) {
-            this.isTalking = isTalking;
+        if (payload.code != "OTHER_TALK_STATE") {
+            const isTalking = !this.isPlayerMuted && !!parseInt(payload.message);
+            if (this.isTalking != isTalking) {
+                this.isTalking = isTalking;
 
-            this.webview.emit('webview:hud:isTalking', isTalking);
+                this.webview.emit('webview:hud:isTalking', isTalking);
 
-            // TODO: Deprecated if alt:V syncs the playFacialAnim native
-            alt.emitServerRaw("server:yaca:lipsync", isTalking)
+                // TODO: Deprecated if alt:V syncs the playFacialAnim native
+                if (!this.useLocalLipsync) {
+                    alt.emitServerRaw("server:yaca:lipsync", isTalking)
+                } else {
+                    this.syncLipsPlayer(this.localPlayer, isTalking);
+                }
+            }
         }
     }
 
