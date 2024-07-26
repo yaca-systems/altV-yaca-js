@@ -123,6 +123,8 @@ export class YaCAClientModule {
     localPlayer = alt.Player.local;
     rangeInterval = null;
     monitorInterval = null;
+    lastWebsocketHeartbeat = null;
+    monitorWebsocketInterval = null;
     websocket = null;
     noPluginActivated = 0;
     messageDisplayed = false;
@@ -278,6 +280,7 @@ export class YaCAClientModule {
 
                 this.websocket.on('error', reason => alt.logError('[YACA-Websocket] Error: ', reason));
                 this.websocket.on('close', (code, reason) => {
+                    this.lastWebsocketHeartbeat = null;
                     alt.emit("YACA:DISCONNECTED_FROM_WEBSOCKET");
                     alt.logError('[YACA-Websocket]: client disconnected', code, reason)
                 });
@@ -755,6 +758,9 @@ export class YaCAClientModule {
         });
 
         this.useWhisper = dataObj.useWhisper;
+
+        // Monitoring if websocket is still connected
+        if (this.monitorWebsocketInterval == null) this.monitorWebsocketInterval = alt.setInterval(this.monitorWebsocketConnection.bind(this), 1500);
     }
 
     isPluginInitialized() {
@@ -822,12 +828,18 @@ export class YaCAClientModule {
             return;
         }
 
+        if (payload.code === "HEARTBEAT") {
+            this.lastWebsocketHeartbeat = Date.now();
+            return;
+        }
+
         let message = translations[payload.code] ?? "Unknown error!";
         if (typeof translations[payload.code] == "undefined") alt.log(`[YaCA-Websocket]: Unknown error code: ${payload.code}`);
         if (message.length < 1) return;
 
         if (payload.code == "OUTDATED_VERSION") {
             message += payload.message;
+            this.websocket?.stop();
         }
 
         natives.beginTextCommandThefeedPost("STRING");
@@ -1160,6 +1172,13 @@ export class YaCAClientModule {
         }
 
         if (this.noPluginActivated >= 120) alt.emitServerRaw("server:yaca:noVoicePlugin")
+    }
+
+    monitorWebsocketConnection() {
+        if (this.lastWebsocketHeartbeat != null && this.lastWebsocketHeartbeat + 4000 > Date.now()) return;
+
+        this.websocket?.stop();
+        this.websocket?.start();
     }
 
     /**
