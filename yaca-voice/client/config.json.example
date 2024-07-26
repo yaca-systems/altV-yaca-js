@@ -8,6 +8,6 @@
         "trophytruck",
         "ratel"
     ],
-    "UseLocalLipsync": false
+    "UseLocalLipsync": false,
     "EnableDebug": false
 }
