@@ -54,7 +54,7 @@ const CommDeviceMode = {
 
 /**
  * @typedef {Object} YacaResponse
- * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "SOUND_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT" | "HEARTBEAT" | "MAX_PLAYER_COUNT_REACHED" | "MOVED_CHANNEL" | "OTHER_TALK_STATE"} code - The response code.
+ * @property {"RENAME_CLIENT" | "MOVE_CLIENT" | "SOUND_STATE" | "TALK_STATE" | "OK" | "WRONG_TS_SERVER" | "NOT_CONNECTED" | "MOVE_ERROR" | "OUTDATED_VERSION" | "WAIT_GAME_INIT" | "HEARTBEAT" | "MAX_PLAYER_COUNT_REACHED" | "MOVED_CHANNEL" | "OTHER_TALK_STATE" | "LICENSE_SERVER_TIMED_OUT"} code - The response code.
  * @property {string} requestType - The type of the request.
  * @property {string} message - The response message.
  */
@@ -112,7 +112,8 @@ const translations = {
     "MAX_PLAYER_COUNT_REACHED": "Your license reached the maximum player count. Please upgrade your license.",
     "MUTE_STATE": "", //Deprecated,
     "MOVED_CHANNEL": "",
-    "OTHER_TALK_STATE": ""
+    "OTHER_TALK_STATE": "",
+    "LICENSE_SERVER_TIMED_OUT": "License server timed out. Please wait.",
 }
 
 export class YaCAClientModule {
