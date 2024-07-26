@@ -103,7 +103,7 @@ const translations = {
     "plugin_not_initializiaed": "Plugin not initialized!",
 
     // Error message which comes from the plugin
-    "OUTDATED_VERSION": "You dont use the required plugin version!",
+    "OUTDATED_VERSION": "You dont use the required plugin version! Please install version ",
     "WRONG_TS_SERVER": "You are on the wrong teamspeak server!",
     "NOT_CONNECTED": "You are on the wrong teamspeak server!",
     "MOVE_ERROR": "Error while moving into ingame teamspeak channel!",
@@ -822,9 +822,13 @@ export class YaCAClientModule {
             return;
         }
 
-        const message = translations[payload.code] ?? "Unknown error!";
+        let message = translations[payload.code] ?? "Unknown error!";
         if (typeof translations[payload.code] == "undefined") alt.log(`[YaCA-Websocket]: Unknown error code: ${payload.code}`);
         if (message.length < 1) return;
+
+        if (payload.code == "OUTDATED_VERSION") {
+            message += payload.message;
+        }
 
         natives.beginTextCommandThefeedPost("STRING");
         natives.addTextComponentSubstringPlayerName(`YACA-Voice: ${message}`);
