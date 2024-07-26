@@ -9,4 +9,5 @@
         "ratel"
     ],
     "UseLocalLipsync": false
+    "EnableDebug": false
 }

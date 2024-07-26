@@ -151,8 +151,10 @@ export class YaCAClientModule {
     currentlySendingPhoneSpeakerSender = new Set();
     currentlyPhoneSpeakerApplied = new Set();
 
+    //Settings
     vehicleMufflingWhitelist = new Set();
     useLocalLipsync = false;
+    enableDebug = false;
 
     useWhisper = false;
 
@@ -246,6 +248,7 @@ export class YaCAClientModule {
         }
 
         this.useLocalLipsync = config.UseLocalLipsync ?? false;
+        this.enableDebug = config.EnableDebug ?? false;
 
         this.registerEvents();
 
@@ -752,7 +755,7 @@ export class YaCAClientModule {
              * if the value is >= 0, you can set the max muffling range before it gets completely cut off
              */
             muffling_range: 2,
-            build_type: YacaBuildType.RELEASE, // 0 = Release, 1 = Debug,
+            build_type: this.enableDebug ? YacaBuildType.DEVELOP : YacaBuildType.RELEASE,
             unmute_delay: 400,
             operation_mode: dataObj.useWhisper ? 1 : 0,
         });

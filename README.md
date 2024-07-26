@@ -30,7 +30,7 @@ using [yaca.systems](https://yaca.systems/) today!
 | --------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | VehicleMufflingWhitelist                | `string[]` | Whitelist of vehicle models that should not be muffled when sitting inside a car without a window/door open.                                                                                                             |
 | UseLocalLipsync                         | `boolean`  | Sync lips via server or client, UseLocalLipsync false is suggested in the most cases          |
-
+| EnableDebug                             | `boolean`  | Enable Debug Mode for the Plugin, skip the version check                            |
 # Serverside API
 
 <details>
