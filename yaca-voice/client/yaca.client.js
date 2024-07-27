@@ -761,9 +761,6 @@ export class YaCAClientModule {
         });
 
         this.useWhisper = dataObj.useWhisper;
-
-        // Monitoring if websocket is still connected
-        if (this.monitorWebsocketInterval == null) this.monitorWebsocketInterval = alt.setInterval(this.monitorWebsocketConnection.bind(this), 1500);
     }
 
     isPluginInitialized() {
@@ -816,6 +813,11 @@ export class YaCAClientModule {
 
                 alt.emit("YACA:JOINED_INGAME_CHANNEL");
                 return;
+            }
+
+            if (payload.requestType == "INIT") {
+                // Monitoring if websocket is still connected
+                if (this.monitorWebsocketInterval == null) this.monitorWebsocketInterval = alt.setInterval(this.monitorWebsocketConnection.bind(this), 1500);
             }
 
             return;
