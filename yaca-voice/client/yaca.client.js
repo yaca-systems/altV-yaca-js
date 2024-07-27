@@ -816,6 +816,7 @@ export class YaCAClientModule {
             }
 
             if (payload.requestType == "INIT") {
+                this.lastWebsocketHeartbeat = Date.now();
                 // Monitoring if websocket is still connected
                 if (this.monitorWebsocketInterval == null) this.monitorWebsocketInterval = alt.setInterval(this.monitorWebsocketConnection.bind(this), 1500);
             }
@@ -843,6 +844,7 @@ export class YaCAClientModule {
         if (message.length < 1) return;
 
         if (payload.code == "OUTDATED_VERSION") {
+            this.lastWebsocketHeartbeat = null;
             message += payload.message;
             this.websocket?.stop();
         }
