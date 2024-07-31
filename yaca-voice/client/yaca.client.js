@@ -811,6 +811,11 @@ export class YaCAClientModule {
                 // Set radio settings on reconnect only, else on first opening
                 if (this.radioInited) this.initRadioSettings();
 
+                if (this.monitorWebsocketInterval) {
+                    alt.clearInterval(this.monitorWebsocketInterval);
+                    this.monitorWebsocketInterval = null;
+                }
+
                 alt.emit("YACA:JOINED_INGAME_CHANNEL");
                 return;
             }
