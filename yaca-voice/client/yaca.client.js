@@ -725,8 +725,8 @@ export class YaCAClientModule {
             case "yaca:voicerange": {
                 if (typeof value == "undefined") return;
 
-                if (isOwnPlayer && !this.isPlayerMuted) {
-                    this.webview?.emit('webview:hud:voiceDistance', value);
+                if (isOwnPlayer) {
+                    if (!this.isPlayerMuted) this.webview?.emit('webview:hud:voiceDistance', value);
                     alt.emit("YACA:VOICE_RANGE_CHANGED", value);
                 }
                 this.setPlayerVariable(entity, "range", value);
