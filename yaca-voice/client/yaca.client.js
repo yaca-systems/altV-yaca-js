@@ -155,8 +155,10 @@ export class YaCAClientModule {
     vehicleMufflingWhitelist = new Set();
     useLocalLipsync = false;
     enableDebug = false;
-
     useWhisper = false;
+    exkludedChannels = [];
+    unmute_delay = 400;
+    muffling_range = 2;
 
     webview = new alt.WebView('http://assets/yaca-ui/assets/index.html');
 
@@ -250,6 +252,10 @@ export class YaCAClientModule {
         this.useLocalLipsync = config.UseLocalLipsync ?? false;
         this.enableDebug = config.EnableDebug ?? false;
         this.useWhisper = config.UseWhisper ?? false;
+        this.exkludedChannels = config.ExkludedChannels ?? [];
+        this.unmute_delay = config.UnmuteDelay ?? 400;
+        this.muffling_range = config.MufflingRange ?? 2;
+
 
         this.registerEvents();
 
@@ -752,15 +758,10 @@ export class YaCAClientModule {
             ingame_channel: dataObj.chid,
             default_channel: dataObj.deChid,
             ingame_channel_password: dataObj.channelPassword,
-            excluded_channels: [1337], // Channel ID's where users can be in while being ingame
-            /**
-             * default are 2 meters
-             * if the value is set to -1, the player voice range is taken
-             * if the value is >= 0, you can set the max muffling range before it gets completely cut off
-             */
-            muffling_range: 2,
+            excluded_channels: this.exkludedChannels,
+            muffling_range: this.muffling_range,
             build_type: this.enableDebug ? YacaBuildType.DEVELOP : YacaBuildType.RELEASE,
-            unmute_delay: 400,
+            unmute_delay: this.unmute_delay,
             operation_mode: this.useWhisper ? 1 : 0,
         });
     }
