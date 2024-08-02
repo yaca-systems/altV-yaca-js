@@ -156,7 +156,7 @@ export class YaCAClientModule {
     useLocalLipsync = false;
     enableDebug = false;
     useWhisper = false;
-    exkludedChannels = [];
+    excludedChannels = [];
     unmute_delay = 400;
     muffling_range = 2;
 
@@ -252,7 +252,7 @@ export class YaCAClientModule {
         this.useLocalLipsync = config.UseLocalLipsync ?? false;
         this.enableDebug = config.EnableDebug ?? false;
         this.useWhisper = config.UseWhisper ?? false;
-        this.exkludedChannels = config.ExkludedChannels ?? [];
+        this.excludedChannels = config.ExcludedChannels ?? [];
         this.unmute_delay = config.UnmuteDelay ?? 400;
         this.muffling_range = config.MufflingRange ?? 2;
 
@@ -758,7 +758,7 @@ export class YaCAClientModule {
             ingame_channel: dataObj.chid,
             default_channel: dataObj.deChid,
             ingame_channel_password: dataObj.channelPassword,
-            excluded_channels: this.exkludedChannels,
+            excluded_channels: this.excludedChannels,
             muffling_range: this.muffling_range,
             build_type: this.enableDebug ? YacaBuildType.DEVELOP : YacaBuildType.RELEASE,
             unmute_delay: this.unmute_delay,

@@ -12,7 +12,7 @@
     "UseLocalLipsync": false,
     "EnableDebug": false,
     "UseWhisper": false,
-    "ExkludedChannels": [],
+    "ExcludedChannels": [],
     "UnmuteDelay": 400,
     "MufflingRange": 2
 }
