@@ -725,7 +725,10 @@ export class YaCAClientModule {
             case "yaca:voicerange": {
                 if (typeof value == "undefined") return;
 
-                if (isOwnPlayer && !this.isPlayerMuted) this.webview.emit('webview:hud:voiceDistance', value);
+                if (isOwnPlayer && !this.isPlayerMuted) {
+                    this.webview?.emit('webview:hud:voiceDistance', value);
+                    alt.emit("YACA:VOICE_RANGE_CHANGED", value);
+                }
                 this.setPlayerVariable(entity, "range", value);
                 break;
             }
@@ -1204,7 +1207,7 @@ export class YaCAClientModule {
             const states = JSON.parse(payload.message);
             this.isPlayerMuted = states.microphoneMuted || states.microphoneDisabled || states.soundMuted || states.soundDisabled;
 
-            this.webview.emit('webview:hud:voiceDistance', this.isPlayerMuted ? 0 : voiceRangesEnum[this.uirange]);
+            this.webview?.emit('webview:hud:voiceDistance', this.isPlayerMuted ? 0 : voiceRangesEnum[this.uirange]);
             alt.emit("YACA:SOUND_STATE_CHANGED", payload.message);
         }
 
@@ -1220,7 +1223,10 @@ export class YaCAClientModule {
             }
 
             const player = alt.Player.getByRemoteID(remoteID);
-            if (player?.valid) this.syncLipsPlayer(player, !!data.isTalking);
+            if (player?.valid) {
+                this.syncLipsPlayer(player, !!data.isTalking);
+                alt.emit("YACA:IS_OTHER_PLAYER_TALKING", remoteID, !!data.isTalking);
+            }
         }
         
         if (payload.code != "OTHER_TALK_STATE") {
@@ -1228,7 +1234,8 @@ export class YaCAClientModule {
             if (this.isTalking != isTalking) {
                 this.isTalking = isTalking;
 
-                this.webview.emit('webview:hud:isTalking', isTalking);
+                this.webview?.emit('webview:hud:isTalking', isTalking);
+                alt.emit("YACA:IS_PLAYER_TALKING", isTalking);
 
                 // TODO: Deprecated if alt:V syncs the playFacialAnim native
                 if (!this.useLocalLipsync) {
@@ -1353,8 +1360,8 @@ export class YaCAClientModule {
             this.radioToggle = true;
             alt.showCursor(true);
             alt.toggleGameControls(false);
-            this.webview.emit('webview:yaca:openState', true);
-            this.webview.focus();
+            this.webview?.emit('webview:yaca:openState', true);
+            this.webview?.focus();
         } else if (this.radioToggle) {
             this.closeRadio();
         }
@@ -1370,8 +1377,8 @@ export class YaCAClientModule {
 
         alt.showCursor(false);
         alt.toggleGameControls(true);
-        this.webview.emit('webview:yaca:openState', false);
-        this.webview.unfocus();
+        this.webview?.emit('webview:yaca:openState', false);
+        this.webview?.unfocus();
     }
 
     /**
@@ -1419,7 +1426,7 @@ export class YaCAClientModule {
     updateRadioInWebview(channel) {
         if (channel != this.activeRadioChannel) return;
 
-        this.webview.emit("webview:yaca:setChannelData", this.radioChannelSettings[channel]);
+        this.webview?.emit("webview:yaca:setChannelData", this.radioChannelSettings[channel]);
     }
 
     /**

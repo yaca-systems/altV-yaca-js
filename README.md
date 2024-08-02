@@ -129,6 +129,31 @@ Emits when the own player changed the microphone or speaker state.
 | Parameter          | Type      | Description             |
 | ---------          | --------- | ----------------------- |
 | States             | `string`  | Represents the current state of microphone and speaker as json (microphoneMuted, microphoneDisabled, soundMuted, soundDisabled)      |
+
+#### `YACA:VOICE_RANGE_CHANGED`
+
+Emits when the own player changed the voice range.
+
+| Parameter          | Type      | Description             |
+| ---------          | --------- | ----------------------- |
+| Range             | `number`  | Represents the current voice range      |
+
+#### `YACA:IS_PLAYER_TALKING`
+
+Emits when the own player is talking.
+
+| Parameter          | Type      | Description             |
+| ---------          | --------- | ----------------------- |
+| IsTalking             | `boolean`  | Represents if the player is talking      |
+
+#### `YACA:IS_OTHER_PLAYER_TALKING`
+
+Emits when another player is talking. Requires localsync to be enabled.
+
+| Parameter          | Type      | Description             |
+| ---------          | --------- | ----------------------- |
+| remoteId             | `number`  | Represents the player id      |
+| IsTalking             | `boolean`  | Represents if the player is talking      |
 </details>
 
 <details>
