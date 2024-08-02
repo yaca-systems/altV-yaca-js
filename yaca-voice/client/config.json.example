@@ -6,8 +6,9 @@
         "vagrant",
         "outlaw",
         "trophytruck",
-        "ratel"
-    ],
+        "ratel",
+        "drifttampa"
+    ]
     "UseLocalLipsync": false,
     "EnableDebug": false
 }
