@@ -50,9 +50,6 @@ const settings = {
 
     // Default Teamspeak Channel, if player can't be moved back to his old channel
     DEFAULT_CHANNEL_ID: parseInt(config.YACA_DEFAULT_CHANNEL_ID) || 1,
-
-    // If true, it will use the teamspeak whisper system
-    USE_WHISPER: config.YACA_USE_WHISPER || false,
 }
 
 /**
@@ -354,8 +351,7 @@ export class YaCAServerModule {
             chid: settings.CHANNEL_ID,
             deChid: settings.DEFAULT_CHANNEL_ID,
             channelPassword: settings.CHANNEL_PASSWORD,
-            ingameName: player.voiceSettings.ingameName,
-            useWhisper: settings.USE_WHISPER
+            ingameName: player.voiceSettings.ingameName
         });
     }
 

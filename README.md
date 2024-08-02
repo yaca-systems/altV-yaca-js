@@ -22,7 +22,6 @@ using [yaca.systems](https://yaca.systems/) today!
 | YACA_CHANNEL_ID       | `number`   | The ID of the Ingame Channel                                                                                           |
 | YACA_CHANNEL_PASSWORD | `string`   | The Password used to join the Ingame Channel                                                                           |
 | YACA_DEFAULT_CHANNEL_ID      | `number`   | The ID of the Channel where a players should be moved to when leaving Ingame                                           |
-| YACA_USE_WHISPER            | `boolean`  | If you want to use the Whisper functions of TeamSpeak, if set to `false` it mutes and unmutes the players - suggested for 500 and more Players              |
 
 # Client Config
 
@@ -31,6 +30,7 @@ using [yaca.systems](https://yaca.systems/) today!
 | VehicleMufflingWhitelist                | `string[]` | Whitelist of vehicle models that should not be muffled when sitting inside a car without a window/door open.                                                                                                             |
 | UseLocalLipsync                         | `boolean`  | Sync lips via server or client, UseLocalLipsync false is suggested in the most cases          |
 | EnableDebug                             | `boolean`  | Enable Debug Mode for the Plugin, skip the version check                            |
+| UseWhisper                              | `boolean`  | Enable Whisper Functionality, if set to `false` it mutes and unmutes the players - suggested for 500 and more Players                                                                                                   |
 # Serverside API
 
 <details>

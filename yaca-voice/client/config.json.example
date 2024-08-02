@@ -10,5 +10,6 @@
         "drifttampa"
     ],
     "UseLocalLipsync": false,
-    "EnableDebug": false
+    "EnableDebug": false,
+    "UseWhisper": false
 }
