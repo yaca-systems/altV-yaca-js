@@ -726,6 +726,7 @@ export class YaCAClientModule {
 
             case "yaca:lipsync": {
                 this.syncLipsPlayer(entity, !!value);
+                if (!isOwnPlayer) alt.emit("YACA:IS_OTHER_PLAYER_TALKING", entity.remoteID, !!value);
                 break;
             }
 

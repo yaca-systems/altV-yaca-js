@@ -151,7 +151,7 @@ Emits when the own player is talking.
 
 #### `YACA:IS_OTHER_PLAYER_TALKING`
 
-Emits when another player is talking. Requires localsync to be enabled.
+Emits when another player is talking.
 
 | Parameter          | Type      | Description             |
 | ---------          | --------- | ----------------------- |
