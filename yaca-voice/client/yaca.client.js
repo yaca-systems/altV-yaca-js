@@ -160,7 +160,7 @@ export class YaCAClientModule {
     unmute_delay = 400;
     muffling_range = 2;
 
-    webview = new alt.WebView('http://assets/yaca-ui/assets/index.html');
+    webview = null;
 
     mhinTimeout = null;
     mhintTick = null;
@@ -256,6 +256,9 @@ export class YaCAClientModule {
         this.unmute_delay = config.UnmuteDelay ?? 400;
         this.muffling_range = config.MufflingRange ?? 2;
 
+        if (alt.Resource.getByName("yaca-ui")?.valid) {
+            this.webview = new alt.WebView('http://assets/yaca-ui/assets/index.html');
+        }
 
         this.registerEvents();
 
@@ -364,31 +367,46 @@ export class YaCAClientModule {
         });
 
         /* =========== RADIO SYSTEM =========== */
-        this.webview.on('client:yaca:enableRadio', (state) => {
-            if (!this.isPluginInitialized()) return;
-
-            if (this.radioEnabled != state) {
-                this.radioEnabled = state;
-                alt.emitServerRaw("server:yaca:enableRadio", state);
-
-                if (!state) {
-                    for (let i = 1; i <= settings.maxRadioChannels; i++) {
-                        this.disableRadioFromPlayerInChannel(i);
-                    }
-                }
-            }
-
-            if (state && !this.radioInited) {
-                this.radioInited = true;
-                this.initRadioSettings();
-                this.updateRadioInWebview(this.activeRadioChannel);
-            }
+        alt.on("client:yaca:enableRadio", (state) => {
+            this.enableRadio(state);
+        });
+        this.webview?.on("client:yaca:enableRadio", (state) => {
+            this.enableRadio(state);
         });
 
-        this.webview.on('client:yaca:changeRadioFrequency', (frequency) => {
-            if (!this.isPluginInitialized()) return;
+        alt.on("client:yaca:changeRadioFrequency", (frequency) => {
+            this.changeRadioFrequency(frequency);
+        });
+        this.webview?.on('client:yaca:changeRadioFrequency', (frequency) => {
+            this.changeRadioFrequency(frequency);
+        });
 
-            alt.emitServerRaw("server:yaca:changeRadioFrequency", this.activeRadioChannel, frequency);
+        alt.on("client:yaca:muteRadioChannel", () => {
+            this.muteRadioChannel();
+        });
+        this.webview?.on('client:yaca:muteRadioChannel', () => {
+            this.muteRadioChannel();
+        });
+
+        alt.on("client:yaca:changeActiveRadioChannel", (channel) => {
+            this.changeActiveRadioChannel(channel);
+        });
+        this.webview?.on('client:yaca:changeActiveRadioChannel', (channel) => {
+            this.changeActiveRadioChannel(channel);
+        });
+
+        alt.on("client:yaca:changeRadioChannelVolume", (higher) => {
+            this.changeRadioChannelVolume(higher);
+        });
+        this.webview?.on('client:yaca:changeRadioChannelVolume', (higher) => {
+            this.changeRadioChannelVolume(higher);
+        });
+
+        alt.on("client:yaca:changeRadioChannelStereo", () => {
+            this.changeRadioStereoMode();
+        });
+        this.webview?.on("client:yaca:changeRadioChannelStereo", () => {
+            this.changeRadioStereoMode();
         });
 
         alt.onServer("client:yaca:setRadioFreq", (channel, frequency) => {
@@ -424,14 +442,6 @@ export class YaCAClientModule {
             }
         });
 
-        this.webview.on('client:yaca:muteRadioChannel', () => {
-            if (!this.isPluginInitialized() || !this.radioEnabled) return;
-
-            const channel = this.activeRadioChannel;
-            if (this.radioChannelSettings[channel].frequency == 0) return;
-            alt.emitServerRaw("server:yaca:muteRadioChannel", channel)
-        });
-
         alt.onServer("client:yaca:setRadioMuteState", (channel, state) => {
             this.radioChannelSettings[channel].muted = state;
             this.updateRadioInWebview(channel);
@@ -454,67 +464,6 @@ export class YaCAClientModule {
                 }
             });
         });
-
-        this.webview.on('client:yaca:changeActiveRadioChannel', (channel) => {
-            if (!this.isPluginInitialized() || !this.radioEnabled) return;
-
-            alt.emitServerRaw('server:yaca:changeActiveRadioChannel', channel);
-            this.activeRadioChannel = channel;
-            this.updateRadioInWebview(channel);
-        });
-
-        this.webview.on('client:yaca:changeRadioChannelVolume', (higher) => {
-            if (!this.isPluginInitialized() || !this.radioEnabled || this.radioChannelSettings[this.activeRadioChannel].frequency == 0) return;
-
-            const channel = this.activeRadioChannel;
-            const oldVolume = this.radioChannelSettings[channel].volume;
-            this.radioChannelSettings[channel].volume = this.clamp(
-                oldVolume + (higher ? 0.17 : -0.17),
-                0,
-                1
-            )
-
-            // Prevent event emit spams, if nothing changed
-            if (oldVolume == this.radioChannelSettings[channel].volume) return
-
-            if (this.radioChannelSettings[channel].volume == 0 || (oldVolume == 0 && this.radioChannelSettings[channel].volume > 0)) {
-                alt.emitServerRaw("server:yaca:muteRadioChannel", channel)
-            }
-
-            // Prevent duplicate update, cuz mute has its own update
-            if (this.radioChannelSettings[channel].volume > 0) this.updateRadioInWebview(channel);
-
-            // Send update to voiceplugin
-            this.setCommDeviceVolume(YacaFilterEnum.RADIO, this.radioChannelSettings[channel].volume, channel);
-        });
-
-        this.webview.on("client:yaca:changeRadioChannelStereo", () => {
-            if (!this.isPluginInitialized() || !this.radioEnabled) return;
-
-            const channel = this.activeRadioChannel;
-
-            switch (this.radioChannelSettings[channel].stereo) {
-                case YacaStereoMode.STEREO:
-                    this.radioChannelSettings[channel].stereo = YacaStereoMode.MONO_LEFT;
-                    this.radarNotification(`Kanal ${channel} ist nun auf der linken Seite hörbar.`);
-                    break;
-                case YacaStereoMode.MONO_LEFT:
-                    this.radioChannelSettings[channel].stereo = YacaStereoMode.MONO_RIGHT;
-                    this.radarNotification(`Kanal ${channel} ist nun auf der rechten Seite hörbar.`);
-                    break;
-                case YacaStereoMode.MONO_RIGHT:
-                    this.radioChannelSettings[channel].stereo = YacaStereoMode.STEREO;
-                    this.radarNotification(`Kanal ${channel} ist nun auf beiden Seiten hörbar.`);
-            };
-
-            // Send update to voiceplugin
-            this.setCommDeviceStereomode(YacaFilterEnum.RADIO, this.radioChannelSettings[channel].stereo, channel);
-        });
-
-        //TODO: Implement, will be used if player activates radio speaker so everyone around him can hear it
-        this.webview.on("client:yaca:changeRadioSpeaker", () => {
-
-        })
 
         /* =========== INTERCOM SYSTEM =========== */
         /**
@@ -1511,6 +1460,97 @@ export class YaCAClientModule {
             alt.emitServerRaw("server:yaca:radioTalking", true);
         });
     };
+
+    enableRadio(state) {
+        if (!this.isPluginInitialized()) return;
+
+        if (this.radioEnabled != state) {
+            this.radioEnabled = state;
+            alt.emitServerRaw("server:yaca:enableRadio", state);
+
+            if (!state) {
+                for (let i = 1; i <= settings.maxRadioChannels; i++) {
+                    this.disableRadioFromPlayerInChannel(i);
+                }
+            }
+        }
+
+        if (state && !this.radioInited) {
+            this.radioInited = true;
+            this.initRadioSettings();
+            this.updateRadioInWebview(this.activeRadioChannel);
+        }
+    }
+
+    changeRadioFrequency(frequency) {
+        if (!this.isPluginInitialized()) return;
+
+        alt.emitServerRaw("server:yaca:changeRadioFrequency", this.activeRadioChannel, frequency);
+    }
+
+    muteRadioChannel() {
+        if (!this.isPluginInitialized() || !this.radioEnabled) return;
+
+        const channel = this.activeRadioChannel;
+        if (this.radioChannelSettings[channel].frequency == 0) return;
+        alt.emitServerRaw("server:yaca:muteRadioChannel", channel)
+    }
+
+    changeActiveRadioChannel(channel) {
+        if (!this.isPluginInitialized() || !this.radioEnabled) return;
+
+        alt.emitServerRaw('server:yaca:changeActiveRadioChannel', channel);
+        this.activeRadioChannel = channel;
+        this.updateRadioInWebview(channel);
+    }
+
+    changeRadioChannelVolume(higher) {
+        if (!this.isPluginInitialized() || !this.radioEnabled || this.radioChannelSettings[this.activeRadioChannel].frequency == 0) return;
+
+        const channel = this.activeRadioChannel;
+        const oldVolume = this.radioChannelSettings[channel].volume;
+        this.radioChannelSettings[channel].volume = this.clamp(
+            oldVolume + (higher ? 0.17 : -0.17),
+            0,
+            1
+        )
+
+        // Prevent event emit spams, if nothing changed
+        if (oldVolume == this.radioChannelSettings[channel].volume) return
+
+        if (this.radioChannelSettings[channel].volume == 0 || (oldVolume == 0 && this.radioChannelSettings[channel].volume > 0)) {
+            alt.emitServerRaw("server:yaca:muteRadioChannel", channel)
+        }
+
+        // Prevent duplicate update, cuz mute has its own update
+        if (this.radioChannelSettings[channel].volume > 0) this.updateRadioInWebview(channel);
+
+        // Send update to voiceplugin
+        this.setCommDeviceVolume(YacaFilterEnum.RADIO, this.radioChannelSettings[channel].volume, channel);
+    }
+
+    changeRadioStereoMode() {
+        if (!this.isPluginInitialized() || !this.radioEnabled) return;
+
+        const channel = this.activeRadioChannel;
+
+        switch (this.radioChannelSettings[channel].stereo) {
+            case YacaStereoMode.STEREO:
+                this.radioChannelSettings[channel].stereo = YacaStereoMode.MONO_LEFT;
+                this.radarNotification(`Kanal ${channel} ist nun auf der linken Seite hörbar.`);
+                break;
+            case YacaStereoMode.MONO_LEFT:
+                this.radioChannelSettings[channel].stereo = YacaStereoMode.MONO_RIGHT;
+                this.radarNotification(`Kanal ${channel} ist nun auf der rechten Seite hörbar.`);
+                break;
+            case YacaStereoMode.MONO_RIGHT:
+                this.radioChannelSettings[channel].stereo = YacaStereoMode.STEREO;
+                this.radarNotification(`Kanal ${channel} ist nun auf beiden Seiten hörbar.`);
+        };
+
+        // Send update to voiceplugin
+        this.setCommDeviceStereomode(YacaFilterEnum.RADIO, this.radioChannelSettings[channel].stereo, channel);
+    }
 
     /* ======================== PHONE SYSTEM ======================== */
 

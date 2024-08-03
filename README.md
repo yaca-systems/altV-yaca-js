@@ -37,6 +37,53 @@ using [yaca.systems](https://yaca.systems/) today!
 # Serverside API
 
 <details>
+<summary style="font-size: x-large">Client</summary>
+
+### General
+
+#### `client:yaca:enableRadio(state: boolean)`
+
+Enables or disables the radio for the player.
+
+| Parameter | Type            | Description       |
+| --------- | --------------- | ----------------- |
+| state     | `boolean`       | Change the state  |
+
+#### `client:yaca:changeRadioFrequency(frequency: string)`
+
+Change the radio frequency from the current radiochannel
+
+| Parameter | Type            | Description       |
+| --------- | --------------- | ----------------- |
+| frequency | `string`        | The frequency in format "xx,xx"  |
+
+#### `client:yaca:muteRadioChannel()`
+
+Mute the current radiochannel.
+
+#### `client:yaca:changeActiveRadioChannel(channel: number)`
+
+Change the active radio channel to the given channel.
+
+| Parameter | Type            | Description       |
+| --------- | --------------- | ----------------- |
+| channel   | `number`        | The channel id    |
+
+#### `client:yaca:changeRadioChannelVolume(higher: boolean)`
+
+Change the volume of the current radio channel.
+
+| Parameter | Type            | Description       |
+| --------- | --------------- | ----------------- |
+| higher   | `boolean`        | true if the volume should be increased, false if it should be decreased  |
+
+#### `lient:yaca:changeRadioChannelStereo()`
+
+Change the stereomode of the current radio channel.
+
+</details>
+
+<details>
 <summary style="font-size: x-large">Server</summary>
 
 ### General
