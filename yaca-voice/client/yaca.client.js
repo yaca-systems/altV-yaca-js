@@ -1028,8 +1028,11 @@ export class YaCAClientModule {
      * @param {boolean} state - The state of the communication.
      * @param {number} [channel] - The channel for the communication. Optional.
      * @param {number} [range] - The range for the communication. Optional.
+     * @param {YacaCommDeviceMode} [ownMode] - The mode for the own player. Optional.
+     * @param {YacaCommDeviceMode} [otherPlayersMode] - The mode for the other players. Optional.
+     * @param {number} [errorlevel] - The error level for the communication. Optional.
      */
-    static setPlayersCommType(players, type, state, channel, range, ownMode, otherPlayersMode) {
+    static setPlayersCommType(players, type, state, channel, range, ownMode, otherPlayersMode, errorlevel) {
         if (!Array.isArray(players)) players = [players];
 
         let cids = [];
@@ -1043,10 +1046,14 @@ export class YaCAClientModule {
         for (const player of players) {
             if (!player) continue;
 
-            cids.push({
+            const clientProtocol = {
                 client_id: player.clientId,
                 mode: otherPlayersMode
-            });
+            };
+
+            if (typeof errorlevel !== "undefined") clientProtocol.errorLevel = errorlevel;
+
+            cids.push(clientProtocol);
         }
 
         const protocol = {
