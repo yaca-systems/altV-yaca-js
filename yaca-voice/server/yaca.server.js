@@ -1,5 +1,6 @@
 import * as alt from 'alt-server';
 import config from '../server.config.json' assert { type: 'json' };
+import sharedConfig from '../shared.config.json' assert { type: 'json' };
 
 //For typescript users
 /*
@@ -50,6 +51,9 @@ const settings = {
 
     // Default Teamspeak Channel, if player can't be moved back to his old channel
     DEFAULT_CHANNEL_ID: parseInt(config.YACA_DEFAULT_CHANNEL_ID) || 1,
+
+    // Use whisper system
+    USE_WHISPER: sharedConfig.UseWhisper || false,
 }
 
 /**
@@ -78,8 +82,9 @@ export class YaCAServerModule {
         if (!settings.UNIQUE_SERVER_ID || settings.UNIQUE_SERVER_ID == "") {
             throw Error('~r~ --> YaCA: Unique Server ID is not set! Please set it in your .env file');
         }
-        alt.log('~g~ --> YaCA: Server loaded');
+
         this.registerEvents();
+        alt.log('~g~ --> YaCA: Server loaded');
     }
 
     /**

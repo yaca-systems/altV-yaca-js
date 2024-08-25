@@ -30,10 +30,12 @@ using [yaca.systems](https://yaca.systems/) today!
 | VehicleMufflingWhitelist                | `string[]` | Whitelist of vehicle models that should not be muffled when sitting inside a car without a window/door open.                                                                                                             |
 | UseLocalLipsync                         | `boolean`  | Sync lips via server or client, UseLocalLipsync false is suggested in the most cases          |
 | EnableDebug                             | `boolean`  | Enable Debug Mode for the Plugin, skip the version check                            |
-| UseWhisper                              | `boolean`  | Enable Whisper Functionality, if set to `false` it mutes and unmutes the players - suggested for 500 and more Players                                                                                                   |
 | ExcludedChannels                        | `number[]` | The player will not be moved into ingame if he is in one of these channels. Needs to be the channelid.                                                                                 |
 | UnmuteDelay                             | `number`   | Delay in milliseconds, how long it should take that teamspeak mutes other player when he is not in range anymore. Improves the performance for the teamspeakserver. Note: He is still not hearable while he is unmuted |
 | MufflingRange                           | `number`   | If the value is set to -1, the player voice range is taken. If the value is >= 0, you can set the max muffling range before it gets completely cut off  |
+
+# Shared Config
+| UseWhisper                              | `boolean`  | Enable Whisper Functionality, if set to `false` it mutes and unmutes the players - suggested for 500 and more Players                                                                                                   |
 
 # API
 

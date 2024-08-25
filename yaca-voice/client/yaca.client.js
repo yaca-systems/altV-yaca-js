@@ -245,13 +245,14 @@ export class YaCAClientModule {
         };
 
         const config = JSON.parse(alt.File.read('./config.json'));
+        const sharedConfig = JSON.parse(alt.File.read('../shared.config.json'));
         for (const vehicleModel of config.VehicleMufflingWhitelist) {
             this.vehicleMufflingWhitelist.add(alt.hash(vehicleModel));
         }
 
         this.useLocalLipsync = config.UseLocalLipsync ?? false;
         this.enableDebug = config.EnableDebug ?? false;
-        this.useWhisper = config.UseWhisper ?? false;
+        this.useWhisper = sharedConfig.UseWhisper ?? false;
         this.excludedChannels = config.ExcludedChannels ?? [];
         this.unmute_delay = config.UnmuteDelay ?? 400;
         this.muffling_range = config.MufflingRange ?? 2;
