@@ -13,6 +13,7 @@ using [yaca.systems](https://yaca.systems/) today!
 2. Add `'yaca-voice'` into the `ressource` section of your `server.toml`.
 3. Rename `server.config.json.example` to `server.config.json` and adjust the [variables](https://github.com/yaca-systems/altV-yaca-js/tree/master?tab=readme-ov-file#server-config) to your needs.
 4. Rename `config/config.json.example` to `config.json` and adjust the [variables](https://github.com/yaca-systems/altV-yaca-js/tree/master?tab=readme-ov-file#client-config) to your needs.
+5. Rename `shared.json.example` to `shared.json` and adjust the [variables](https://github.com/yaca-systems/altV-yaca-js/tree/master?tab=readme-ov-file#shared-config) to your needs.
 
 # Server Config
 
