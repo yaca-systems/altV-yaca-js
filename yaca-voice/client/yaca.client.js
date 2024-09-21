@@ -1600,7 +1600,15 @@ export class YaCAClientModule {
             if (state) this.inCall.add(targetID);
         }
 
-        YaCAClientModule.setPlayersCommType(targets, filter, state, undefined, undefined, CommDeviceMode.TRANSCEIVER, CommDeviceMode.TRANSCEIVER);
+        YaCAClientModule.setPlayersCommType(
+            targets,
+            filter,
+            state,
+            undefined,
+            undefined,
+            (state || (!state && !this.inCall.size)) ? CommDeviceMode.TRANSCEIVER : undefined,
+            CommDeviceMode.TRANSCEIVER
+        );
     }
 
     /* ======================== MEGAPHONE SYSTEM ======================== */
