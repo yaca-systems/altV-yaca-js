@@ -43,7 +43,15 @@ using [yaca.systems](https://yaca.systems/) today!
 <details>
 <summary style="font-size: x-large">Client</summary>
 
-### General
+### Radio
+
+#### `client:yaca:canOpenRadio(state: boolean)`
+
+Enables or disables the radio for the player - default its allowed.
+
+| Parameter | Type            | Description       |
+| --------- | --------------- | ----------------- |
+| state     | `boolean`       | Change the state  |
 
 #### `client:yaca:enableRadio(state: boolean)`
 

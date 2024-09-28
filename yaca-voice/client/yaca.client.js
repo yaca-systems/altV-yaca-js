@@ -136,6 +136,7 @@ export class YaCAClientModule {
     firstConnect = true;
     isPlayerMuted = false;
 
+    canOpenRadio = true;
     radioFrequenceSetted = false;
     radioToggle = false;
     radioEnabled = false;
@@ -368,6 +369,13 @@ export class YaCAClientModule {
         });
 
         /* =========== RADIO SYSTEM =========== */
+        alt.on("client:yaca:canOpenRadio", (state) => {
+            this.canOpenRadio = state;
+        })
+        alt.onServer("client:yaca:canOpenRadio", (state) => {
+            this.canOpenRadio = state;
+        });
+
         alt.on("client:yaca:enableRadio", (state) => {
             this.enableRadio(state);
         });
@@ -1314,7 +1322,7 @@ export class YaCAClientModule {
 
     /* ======================== RADIO SYSTEM ======================== */
     openRadio() {
-        if (!this.radioToggle && !alt.isCursorVisible()) {
+        if (!this.radioToggle && !alt.isCursorVisible() && this.canOpenRadio) {
             this.radioToggle = true;
             alt.showCursor(true);
             alt.toggleGameControls(false);
