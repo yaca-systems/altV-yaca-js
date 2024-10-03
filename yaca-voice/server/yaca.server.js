@@ -209,20 +209,20 @@ export class YaCAServerModule {
             this.radioActiveChannelChange(player, channel)
         });
 
-        alt.onClient("server:yaca:phoneSpeakerEmit", (player, enableForTargets, disableForTargets) => {
-            const enableWhisperReceive = [];
-            const disableWhisperReceive = [];
+        alt.onClient("server:yaca:phoneSpeakerEmit", (player, enableForTargets, disableForTargets, bothDirections = false) => {
+            const enableReceive = [];
+            const disableReceive = [];
 
             player.voiceSettings.inCallWith.forEach(callTarget => {
                 const target = alt.Player.getByID(callTarget);
                 if (!target?.valid) return;
 
-                if (enableForTargets?.length) enableWhisperReceive.push(target);
-                if (disableForTargets?.length) disableWhisperReceive.push(target);
+                if (enableForTargets?.length) enableReceive.push(target);
+                if (disableForTargets?.length) disableReceive.push(target);
             });
 
-            if (enableWhisperReceive.length) alt.emitClientRaw(enableWhisperReceive, "client:yaca:playersToPhoneSpeakerEmit", enableForTargets, true);
-            if (disableWhisperReceive.length) alt.emitClientRaw(disableWhisperReceive, "client:yaca:playersToPhoneSpeakerEmit", disableForTargets, false);
+            if (enableReceive.length) alt.emitClientRaw(enableReceive, "client:yaca:playersToPhoneSpeakerEmit", enableForTargets, true, bothDirections);
+            if (disableReceive.length) alt.emitClientRaw(disableReceive, "client:yaca:playersToPhoneSpeakerEmit", disableForTargets, false, bothDirections);
         });
 
         alt.onClient("server:yaca:muteOnPhone", this.muteOnPhone.bind(this));

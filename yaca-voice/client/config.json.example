@@ -16,5 +16,6 @@
     "EnableDebug": false,
     "ExcludedChannels": [],
     "UnmuteDelay": 400,
-    "MufflingRange": 2
+    "MufflingRange": 2,
+    "PhoneSpeakerHearBothDirections": false
 }
