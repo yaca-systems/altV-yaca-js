@@ -147,7 +147,8 @@ export class YaCAClientModule {
     playersWithShortRange = new Map();
     playersInRadioChannel = new Map();
     towers = [];
-    maxDistanceToTower = 8000;
+    maxDistanceToTower = 5000;
+    radioTowerCalculation = null;
 
     inCall = new Set();
     phoneSpeakerActive = false;
@@ -268,6 +269,9 @@ export class YaCAClientModule {
         if (alt.Resource.getByName("yaca-ui")?.valid) {
             this.webview = new alt.WebView('http://assets/yaca-ui/assets/index.html');
         }
+
+        this.towers = config.RadioTowers ?? [];
+        this.maxDistanceToTower = config.MaxDistanceToRadioTower ?? 5000;
 
         this.registerEvents();
 
@@ -1366,7 +1370,7 @@ export class YaCAClientModule {
         let nearestTower = null;
     
         for (const tower of this.towers) {
-            const distance = this.localPlayer.pos.distanceTo(new alt.Vector3(tower.X, tower.Y, tower.Z));
+            const distance = this.localPlayer.pos.distanceTo(new alt.Vector3(tower.x, tower.y, tower.z));
             if (distance >= this.maxDistanceToTower) continue;
     
             if (!nearestTower || distance < nearestTower.distance) {
@@ -1516,6 +1520,11 @@ export class YaCAClientModule {
     radioTalkingStart(state, clearPedTasks = true) {
         if (!state) {
             if (this.radioTalking) {
+                if (this.radioTowerCalculation) {
+                    clearInterval(this.radioTowerCalculation);
+                    this.radioTowerCalculation = null;
+                }
+
                 this.radioTalking = false;
                 if (!this.useWhisper) this.radioTalkingStateToPlugin(false);
                 alt.emitServerRaw("server:yaca:radioTalking", false);
@@ -1533,10 +1542,21 @@ export class YaCAClientModule {
         alt.Utils.requestAnimDict("random@arrests").then(() => {
             natives.taskPlayAnim(this.localPlayer, "random@arrests", "generic_radio_chatter", 3, -4, -1, 49, 0.0, false, false, false);
             
-            const distanceToTowerFromSender = this.getNearestTower()?.distance ?? -1;
-            alt.emitServerRaw("server:yaca:radioTalking", true, distanceToTowerFromSender);
+            if (this.radioTowerCalculation) clearInterval(this.radioTowerCalculation);
+
+            this.sendRadioRequestToServer();
+            this.radioTowerCalculation = setInterval(() => {
+                this.sendRadioRequestToServer();
+            }, 1000);
         });
     };
+
+    sendRadioRequestToServer() {
+        if (!this.radioTalking || !this.radioEnabled || !this.radioFrequenceSetted) return;
+
+        const distanceToTowerFromSender = this.getNearestTower()?.distance ?? -1;
+        alt.emitServerRaw("server:yaca:radioTalking", true, distanceToTowerFromSender);
+    }
 
     enableRadio(state) {
         if (!this.isPluginInitialized()) return;
