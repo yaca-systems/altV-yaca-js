@@ -270,7 +270,9 @@ export class YaCAClientModule {
             this.webview = new alt.WebView('http://assets/yaca-ui/assets/index.html');
         }
 
-        this.towers = config.RadioTowers ?? [];
+        this.towers = config.RadioTowers?.map((tower) => {
+            return new alt.Vector3(tower.x, tower.y, tower.z)
+        }) ?? [];
         this.maxDistanceToTower = config.MaxDistanceToRadioTower ?? 5000;
 
         this.registerEvents();
@@ -1370,7 +1372,7 @@ export class YaCAClientModule {
         let nearestTower = null;
     
         for (const tower of this.towers) {
-            const distance = this.localPlayer.pos.distanceTo(new alt.Vector3(tower.x, tower.y, tower.z));
+            const distance = this.localPlayer.pos.distanceTo(tower);
             if (distance >= this.maxDistanceToTower) continue;
     
             if (!nearestTower || distance < nearestTower.distance) {
