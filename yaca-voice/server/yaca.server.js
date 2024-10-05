@@ -229,6 +229,14 @@ export class YaCAServerModule {
             const enableReceive = [];
             const disableReceive = [];
 
+            player.voiceSettings.inCallWith.forEach(callTarget => {
+                const target = alt.Player.getByID(callTarget);
+                if (!target?.valid) return;
+
+                if (enableForTargets?.length) enableReceive.push(target);
+                if (disableForTargets?.length) disableReceive.push(target);
+            });
+            
             if (enableReceive.length) alt.emitClientRaw(enableReceive, "client:yaca:playersToPhoneSpeakerEmit", enableForTargets, true);
             if (disableReceive.length) alt.emitClientRaw(disableReceive, "client:yaca:playersToPhoneSpeakerEmit", disableForTargets, false);
         });
