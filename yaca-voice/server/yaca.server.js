@@ -54,6 +54,8 @@ const settings = {
 
     // Use whisper system
     USE_WHISPER: sharedConfig.UseWhisper || false,
+
+    PHONESPEAKER_BOTH_DIRECTIONS: sharedConfig.PhoneSpeakerHearBothDirections || false,
 }
 
 /**
@@ -211,6 +213,8 @@ export class YaCAServerModule {
         });
 
         alt.onClient("server:yaca:phoneSpeakerEmitWhisper", (player, enableForTargets, disableForTargets) => {
+            if (!settings.PHONESPEAKER_BOTH_DIRECTIONS) return;
+
             const enableReceive = [];
             const disableReceive = [];
 
@@ -250,8 +254,8 @@ export class YaCAServerModule {
                 });
             }
             
-            if (enableReceive.length) alt.emitClientRaw(enableReceive, "client:yaca:playersToPhoneSpeakerEmit", enableForTargets, true);
-            if (disableReceive.length) alt.emitClientRaw(disableReceive, "client:yaca:playersToPhoneSpeakerEmit", disableForTargets, false);
+            if (enableReceive.length) alt.emitClientRaw(enableReceive, "client:yaca:phone", enableForTargets, true);
+            if (disableReceive.length) alt.emitClientRaw(disableReceive, "client:yaca:phone", disableForTargets, false);
         });
 
         alt.onClient("server:yaca:muteOnPhone", this.muteOnPhone.bind(this));

@@ -1,3 +1,4 @@
 {
-    "UseWhisper": false
+    "UseWhisper": false,
+    "PhoneSpeakerHearBothDirections": false
 }

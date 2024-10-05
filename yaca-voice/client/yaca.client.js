@@ -265,7 +265,7 @@ export class YaCAClientModule {
         this.excludedChannels = config.ExcludedChannels ?? [];
         this.unmute_delay = config.UnmuteDelay ?? 400;
         this.muffling_range = config.MufflingRange ?? 2;
-        this.phoneSpeakerBothDirections = config.PhoneSpeakerHearBothDirections ?? false;
+        this.phoneSpeakerBothDirections = sharedConfig.PhoneSpeakerHearBothDirections ?? false;
         this.maxPhoneSpeakerRange = config.MaxPhoneSpeakerRange ?? 5;
 
         if (alt.Resource.getByName("yaca-ui")?.valid) {
@@ -640,13 +640,6 @@ export class YaCAClientModule {
                     CommDeviceMode.RECEIVER
                 );
             }
-        });
-
-        alt.onServer("client:yaca:playersToPhoneSpeakerEmit", (playerIDs, state) => {
-            if (!this.phoneSpeakerBothDirections) return;
-            if (!Array.isArray(playerIDs)) playerIDs = [playerIDs];
-
-            this.enablePhoneCall(playerIDs, state, YacaFilterEnum.PHONE);
         });
 
         /* =========== alt:V Events =========== */
