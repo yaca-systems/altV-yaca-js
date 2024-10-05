@@ -1334,7 +1334,6 @@ export class YaCAClientModule {
             if ((this.useWhisper || this.phoneSpeakerBothDirections)
                 && this.phoneSpeakerActive
                 && this.inCall.size
-                && !this.localPlayer.mutedOnPhone
                 && localPos.distanceTo(player.pos) <= settings.maxPhoneSpeakerRange
             ) {
                 playersToPhoneSpeaker.add(player.remoteID);
