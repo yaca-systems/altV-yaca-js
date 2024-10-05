@@ -213,8 +213,6 @@ export class YaCAServerModule {
         });
 
         alt.onClient("server:yaca:phoneSpeakerEmitWhisper", (player, enableForTargets, disableForTargets) => {
-            if (!settings.PHONESPEAKER_BOTH_DIRECTIONS) return;
-
             const enableReceive = [];
             const disableReceive = [];
 
@@ -231,6 +229,8 @@ export class YaCAServerModule {
         });
 
         alt.onClient("server:yaca:phoneSpeakerEmit", (player, enableForTargets, disableForTargets) => {
+            if (!settings.PHONESPEAKER_BOTH_DIRECTIONS) return;
+
             const enableReceive = [];
             const disableReceive = [];
 
