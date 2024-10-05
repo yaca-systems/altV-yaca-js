@@ -138,7 +138,8 @@ export class YaCAServerModule {
             forceMuted: false,
             ingameName: name,
             mutedOnPhone: false,
-            inCallWith: new Set()
+            inCallWith: new Set(),
+            emittedPhoneSpeaker: new Set()
         };
 
         player.radioSettings = {
@@ -229,18 +230,29 @@ export class YaCAServerModule {
             const enableReceive = [];
             const disableReceive = [];
 
-            player.voiceSettings.inCallWith.forEach(callTarget => {
-                const target = alt.Player.getByID(callTarget);
-                if (!target?.valid) return;
+            if (enableForTargets?.length) {
+                player.voiceSettings.inCallWith.forEach(callTarget => {
+                    const target = alt.Player.getByID(callTarget);
+                    if (!target?.valid) return;
+    
+                    enableReceive.push(target);
+                    player.voiceSettings.emittedPhoneSpeaker.add(callTarget);
+                });
+            }
 
-                if (enableForTargets?.length) enableReceive.push(target);
-                if (disableForTargets?.length) disableReceive.push(target);
-            });
+            if (disableForTargets?.length) {
+                player.voiceSettings.emittedPhoneSpeaker.forEach(speakerTarget => {
+                    player.voiceSettings.emittedPhoneSpeaker.delete(speakerTarget);
+                    const target = alt.Player.getByID(speakerTarget);
+                    if (!target?.valid) return;
+
+                    disableReceive.push(target);
+                });
+            }
             
             if (enableReceive.length) alt.emitClientRaw(enableReceive, "client:yaca:playersToPhoneSpeakerEmit", enableForTargets, true);
             if (disableReceive.length) alt.emitClientRaw(disableReceive, "client:yaca:playersToPhoneSpeakerEmit", disableForTargets, false);
         });
-
 
         alt.onClient("server:yaca:muteOnPhone", this.muteOnPhone.bind(this));
         alt.onClient("server:yaca:enablePhoneSpeaker", this.enablePhoneSpeaker.bind(this));
