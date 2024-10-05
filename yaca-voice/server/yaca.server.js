@@ -240,17 +240,25 @@ export class YaCAServerModule {
                     if (!target?.valid) return;
     
                     enableReceive.push(target);
-                    player.voiceSettings.emittedPhoneSpeaker.add(callTarget);
+
+                    enableForTargets.forEach(targetID => {
+                        const map = player.voiceSettings.emittedPhoneSpeaker;
+                        const set = map.get(targetID) ?? (map.set(targetID, new Set()), map.get(targetID));
+                        set.add(callTarget);
+                    });
                 });
             }
 
             if (disableForTargets?.length) {
-                player.voiceSettings.emittedPhoneSpeaker.forEach(speakerTarget => {
-                    player.voiceSettings.emittedPhoneSpeaker.delete(speakerTarget);
-                    const target = alt.Player.getByID(speakerTarget);
-                    if (!target?.valid) return;
+                disableForTargets.forEach(targetID => {
+                    player.voiceSettings.emittedPhoneSpeaker.get(targetID)?.forEach(emittedTarget => {
+                        const target = alt.Player.getByID(emittedTarget);
+                        if (!target?.valid) return;
 
-                    disableReceive.push(target);
+                        disableReceive.push(target);
+                    });
+
+                    player.voiceSettings.emittedPhoneSpeaker.delete(targetID);
                 });
             }
             
