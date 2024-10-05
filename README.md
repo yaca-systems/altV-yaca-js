@@ -34,6 +34,8 @@ using [yaca.systems](https://yaca.systems/) today!
 | ExcludedChannels                        | `number[]` | The player will not be moved into ingame if he is in one of these channels. Needs to be the channelid.                                                                                 |
 | UnmuteDelay                             | `number`   | Delay in milliseconds, how long it should take that teamspeak mutes other player when he is not in range anymore. Improves the performance for the teamspeakserver. Note: He is still not hearable while he is unmuted |
 | MufflingRange                           | `number`   | If the value is set to -1, the player voice range is taken. If the value is >= 0, you can set the max muffling range before it gets completely cut off  |
+| MaxDistanceToRadioTower                 | `number`   | The max distance to the radio tower in meters. Used for the quality calculation of the radio.                                                                                                                  |
+| RadioTowers                             | `object[]` | The radio towers used for the quality calculation. If empty, the quality is always good. |
 | PhoneSpeakerHearBothDirections | `boolean`  | If set to true, the player can hear people which are near the person, who has enabled the phone speaker.  |
 
 # Shared Config

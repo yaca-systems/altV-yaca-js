@@ -200,8 +200,8 @@ export class YaCAServerModule {
         });
 
         //YaCA-Radio: Talk in radio channel
-        alt.onClient("server:yaca:radioTalking", (player, state) => {
-            this.radioTalkingState(player, state)
+        alt.onClient("server:yaca:radioTalking", (player, state, distanceToTowerFromSender = -1) => {
+            this.radioTalkingState(player, state, distanceToTowerFromSender)
         });
 
         //YaCA-Radio: Change active radio channel
@@ -520,7 +520,7 @@ export class YaCAServerModule {
      * @param {alt.Player} player - The player to change the talking state for.
      * @param {boolean} state - The new talking state.
      */
-    radioTalkingState(player, state) {
+    radioTalkingState(player, state, distanceToTowerFromSender) {
         if (!player?.valid) return;
         if (!player.radioSettings.activated) return;
 
@@ -561,7 +561,7 @@ export class YaCAServerModule {
             }
         }
 
-        if (targets.length) alt.emitClientRaw(targets, "client:yaca:radioTalking", player.id, radioFrequency, state, radioInfos);
+        if (targets.length) alt.emitClientRaw(targets, "client:yaca:radioTalking", player.id, radioFrequency, state, radioInfos, false, distanceToTowerFromSender);
         if (settings.USE_WHISPER) alt.emitClientRaw(player, "client:yaca:radioTalking", targetsToSender, radioFrequency, state, radioInfos, true)
     };
 
