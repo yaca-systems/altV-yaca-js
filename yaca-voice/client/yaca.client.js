@@ -1406,7 +1406,7 @@ export class YaCAClientModule {
                 this.currentlySendingPhoneSpeakerSender = new Set(playersToPhoneSpeaker);
     
                 if (playersToNotReceivePhoneSpeaker.length || playersNeedsReceivePhoneSpeaker.length) {
-                    TriggerServer("server:yaca:phoneSpeakerEmitWhisper", playersNeedsReceivePhoneSpeaker, playersToNotReceivePhoneSpeaker);
+                    alt.emitServerRaw("server:yaca:phoneSpeakerEmitWhisper", playersNeedsReceivePhoneSpeaker, playersToNotReceivePhoneSpeaker);
                 }
             }
 
@@ -1418,7 +1418,7 @@ export class YaCAClientModule {
                 this.phoneSpeakerBothDirectionsPlayers = new Set(playersHearableOnPhoneSpeaker);
 
                 if (playersToNotReceivePhoneSpeaker.length || playersNeedsReceivePhoneSpeaker.length) {
-                    TriggerServer("server:yaca:phoneSpeakerEmit", playersNeedsReceivePhoneSpeaker, playersToNotReceivePhoneSpeaker);
+                    alt.emitServerRaw("server:yaca:phoneSpeakerEmit", playersNeedsReceivePhoneSpeaker, playersToNotReceivePhoneSpeaker);
                 }
             }
         }
