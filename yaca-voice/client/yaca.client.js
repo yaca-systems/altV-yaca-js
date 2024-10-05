@@ -646,28 +646,8 @@ export class YaCAClientModule {
             if (!this.phoneSpeakerBothDirections) return;
             if (!Array.isArray(playerIDs)) playerIDs = [playerIDs];
 
-            let applyPhoneSpeaker = new Set();
-            let phoneSpeakerRemove = new Set();
-            for (const playerID of playerIDs) {
-                const player = this.getPlayerByID(playerID);
-                if (!player) continue;
-
-                if (state) {
-                    applyPhoneSpeaker.add(player);
-                } else {
-                    phoneSpeakerRemove.add(player);
-                }
-            }
-
-            if (applyPhoneSpeaker.size) {
-                this.enablePhoneCall(Array.from(applyPhoneSpeaker), true, YacaFilterEnum.PHONE);
-            }
-
-            if (phoneSpeakerRemove.size) {
-                this.enablePhoneCall(Array.from(phoneSpeakerRemove), false, YacaFilterEnum.PHONE);
-            }
+            this.enablePhoneCall(playerIDs, state, YacaFilterEnum.PHONE);
         });
-
 
         /* =========== alt:V Events =========== */
         alt.on("keydown", (key) => {
