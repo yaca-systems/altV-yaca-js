@@ -604,42 +604,23 @@ export class YaCAClientModule {
             if (!this.useWhisper) return;
             if (!Array.isArray(playerIDs)) playerIDs = [playerIDs];
 
-            let applyPhoneSpeaker = new Set();
-            let phoneSpeakerRemove = new Set();
+            let targets = new Set();
             for (const playerID of playerIDs) {
                 const player = this.getPlayerByID(playerID);
                 if (!player) continue;
 
-                if (state) {
-                    applyPhoneSpeaker.add(player);
-                } else {
-                    phoneSpeakerRemove.add(player);
-                }
+                targets.add(player);
             }
 
-            if (applyPhoneSpeaker.size) {
-                YaCAClientModule.setPlayersCommType(
-                    Array.from(applyPhoneSpeaker),
-                    YacaFilterEnum.PHONE_SPEAKER,
-                    true,
-                    undefined,
-                    undefined,
-                    CommDeviceMode.SENDER,
-                    CommDeviceMode.RECEIVER
-                );
-            }
-
-            if (phoneSpeakerRemove.size) {
-                YaCAClientModule.setPlayersCommType(
-                    Array.from(phoneSpeakerRemove),
-                    YacaFilterEnum.PHONE_SPEAKER,
-                    false,
-                    undefined,
-                    undefined,
-                    CommDeviceMode.SENDER,
-                    CommDeviceMode.RECEIVER
-                );
-            }
+            YaCAClientModule.setPlayersCommType(
+                Array.from(targets),
+                YacaFilterEnum.PHONE_SPEAKER,
+                state,
+                undefined,
+                undefined,
+                CommDeviceMode.SENDER,
+                CommDeviceMode.RECEIVER
+            );
         });
 
         /* =========== alt:V Events =========== */
