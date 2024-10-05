@@ -37,6 +37,7 @@ using [yaca.systems](https://yaca.systems/) today!
 | MaxDistanceToRadioTower                 | `number`   | The max distance to the radio tower in meters. Used for the quality calculation of the radio.                                                                                                                  |
 | RadioTowers                             | `object[]` | The radio towers used for the quality calculation. If empty, the quality is always good. |
 | PhoneSpeakerHearBothDirections          | `boolean`  | If set to true, the player can hear people which are near the person, who has enabled the phone speaker.  |
+| MaxPhoneSpeakerRange                    | `number`   | The max range for the phone speaker in meters.  |
 
 # Shared Config
 | UseWhisper                              | `boolean`  | Enable Whisper Functionality, if set to `false` it mutes and unmutes the players - suggested for 500 and more Players                                                                                                   |

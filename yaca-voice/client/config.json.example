@@ -18,6 +18,7 @@
     "UnmuteDelay": 400,
     "MufflingRange": 2,
     "PhoneSpeakerHearBothDirections": false,
+    "MaxPhoneSpeakerRange": 5,
     "MaxDistanceToRadioTower": 5000,
     "RadioTowers": [
         {
