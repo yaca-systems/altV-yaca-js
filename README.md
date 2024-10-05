@@ -36,7 +36,7 @@ using [yaca.systems](https://yaca.systems/) today!
 | MufflingRange                           | `number`   | If the value is set to -1, the player voice range is taken. If the value is >= 0, you can set the max muffling range before it gets completely cut off  |
 | MaxDistanceToRadioTower                 | `number`   | The max distance to the radio tower in meters. Used for the quality calculation of the radio.                                                                                                                  |
 | RadioTowers                             | `object[]` | The radio towers used for the quality calculation. If empty, the quality is always good. |
-| PhoneSpeakerHearBothDirections | `boolean`  | If set to true, the player can hear people which are near the person, who has enabled the phone speaker.  |
+| PhoneSpeakerHearBothDirections          | `boolean`  | If set to true, the player can hear people which are near the person, who has enabled the phone speaker.  |
 
 # Shared Config
 | UseWhisper                              | `boolean`  | Enable Whisper Functionality, if set to `false` it mutes and unmutes the players - suggested for 500 and more Players                                                                                                   |
