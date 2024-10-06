@@ -62,9 +62,6 @@ const CommDeviceMode = {
 const settings = {
     // Max Radio Channels
     maxRadioChannels: 9, // needs to be sync with serverside setting
-
-    // Max phone speaker range
-    maxPhoneSpeakerRange: 5,
 }
 
 const lipsyncAnims = {
@@ -154,6 +151,7 @@ export class YaCAClientModule {
     phoneSpeakerActive = false;
     currentlySendingPhoneSpeakerSender = new Set();
     currentlyPhoneSpeakerApplied = new Set();
+    phoneSpeakerBothDirectionsPlayers = new Set();
 
     //Settings
     vehicleMufflingWhitelist = new Set();
@@ -163,6 +161,8 @@ export class YaCAClientModule {
     excludedChannels = [];
     unmute_delay = 400;
     muffling_range = 2;
+    phoneSpeakerBothDirections = false;
+    maxPhoneSpeakerRange = 5;
 
     webview = null;
 
@@ -265,6 +265,8 @@ export class YaCAClientModule {
         this.excludedChannels = config.ExcludedChannels ?? [];
         this.unmute_delay = config.UnmuteDelay ?? 400;
         this.muffling_range = config.MufflingRange ?? 2;
+        this.phoneSpeakerBothDirections = sharedConfig.PhoneSpeakerHearBothDirections ?? false;
+        this.maxPhoneSpeakerRange = config.MaxPhoneSpeakerRange ?? 5;
 
         if (alt.Resource.getByName("yaca-ui")?.valid) {
             this.webview = new alt.WebView('http://assets/yaca-ui/assets/index.html');
@@ -598,24 +600,27 @@ export class YaCAClientModule {
             }
         })
 
-        alt.onServer("client:yaca:playersToPhoneSpeakerEmit", (playerIDs, state) => {
+        alt.onServer("client:yaca:playersToPhoneSpeakerEmitWhisper", (playerIDs, state) => {
+            if (!this.useWhisper) return;
             if (!Array.isArray(playerIDs)) playerIDs = [playerIDs];
 
-            let applyPhoneSpeaker = new Set();
-            let phoneSpeakerRemove = new Set();
+            let targets = new Set();
             for (const playerID of playerIDs) {
                 const player = this.getPlayerByID(playerID);
                 if (!player) continue;
 
-                if (state) {
-                    applyPhoneSpeaker.add(player);
-                } else {
-                    phoneSpeakerRemove.add(player);
-                }
+                targets.add(player);
             }
 
-            if (applyPhoneSpeaker.size) YaCAClientModule.setPlayersCommType(Array.from(applyPhoneSpeaker), YacaFilterEnum.PHONE_SPEAKER, true, undefined, undefined, CommDeviceMode.SENDER, CommDeviceMode.RECEIVER);
-            if (phoneSpeakerRemove.size) YaCAClientModule.setPlayersCommType(Array.from(phoneSpeakerRemove), YacaFilterEnum.PHONE_SPEAKER, false, undefined, undefined, CommDeviceMode.SENDER, CommDeviceMode.RECEIVER);
+            YaCAClientModule.setPlayersCommType(
+                Array.from(targets),
+                YacaFilterEnum.PHONE_SPEAKER,
+                state,
+                undefined,
+                undefined,
+                CommDeviceMode.SENDER,
+                CommDeviceMode.RECEIVER
+            );
         });
 
         /* =========== alt:V Events =========== */
@@ -1265,6 +1270,7 @@ export class YaCAClientModule {
         const currentRoom = natives.getRoomKeyFromEntity(this.localPlayer);
         const playersToPhoneSpeaker = new Set();
         const playersOnPhoneSpeaker = new Set();
+        const playersHearableOnPhoneSpeaker = new Set();
 
         const localData = this.getPlayerByID(this.localPlayer.remoteID);
         if (!localData) return;
@@ -1274,6 +1280,8 @@ export class YaCAClientModule {
 
             const voiceSetting = this.getPlayerByID(player.remoteID);
             if (!voiceSetting?.clientId) continue;
+
+            const distanceToPlayer = localPos.distanceTo(player.pos);
 
             let muffleIntensity = 0;
             if (currentRoom != natives.getRoomKeyFromEntity(player) && !natives.hasEntityClearLosToEntity(this.localPlayer, player, 17)) {
@@ -1295,14 +1303,23 @@ export class YaCAClientModule {
                 });
             }
 
-            
             // Phone speaker handling - user who enabled it.
-            if (this.useWhisper && this.phoneSpeakerActive && this.inCall.size && localPos.distanceTo(player.pos) <= settings.maxPhoneSpeakerRange) {
-                playersToPhoneSpeaker.add(player.remoteID);
+            if ((this.useWhisper || this.phoneSpeakerBothDirections)
+                && this.phoneSpeakerActive
+                && this.inCall.size
+                && distanceToPlayer <= this.maxPhoneSpeakerRange
+            ) {
+                if (this.phoneSpeakerBothDirections && !this.localPlayer.mutedOnPhone) {
+                    playersHearableOnPhoneSpeaker.add(player.remoteID);
+                }
+
+                if (this.useWhisper) {
+                    playersToPhoneSpeaker.add(player.remoteID);
+                }
             }
     
             // Phone speaker handling.
-            if (voiceSetting.phoneCallMemberIds && localPos.distanceTo(player.pos) <= settings.maxPhoneSpeakerRange)
+            if (voiceSetting.phoneCallMemberIds && distanceToPlayer <= this.maxPhoneSpeakerRange)
             {
                 for (const phoneCallMemberId of voiceSetting.phoneCallMemberIds)
                 {
@@ -1314,7 +1331,7 @@ export class YaCAClientModule {
                         client_id: phoneCallMember.clientId,
                         position: player.pos,
                         direction: natives.getEntityForwardVector(player),
-                        range: settings.maxPhoneSpeakerRange,
+                        range: this.maxPhoneSpeakerRange,
                         is_underwater: natives.isPedSwimmingUnderWater(player),
                         muffle_intensity: muffleIntensity,
                         is_muted: false
@@ -1322,28 +1339,48 @@ export class YaCAClientModule {
 
                     playersOnPhoneSpeaker.add(phoneCallMemberId);
 
-                    YaCAClientModule.setPlayersCommType(phoneCallMember, YacaFilterEnum.PHONE_SPEAKER, true, undefined, settings.maxPhoneSpeakerRange, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
+                    YaCAClientModule.setPlayersCommType(phoneCallMember, YacaFilterEnum.PHONE_SPEAKER, true, undefined, this.maxPhoneSpeakerRange, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
 
                     this.currentlyPhoneSpeakerApplied.add(phoneCallMemberId);
                 }
             }
         }
 
-        if (this.useWhisper && ((this.phoneSpeakerActive && this.inCall.size) || ((!this.phoneSpeakerActive || !this.inCall.size) && this.currentlySendingPhoneSpeakerSender.size))) {
-            const playersToNotReceivePhoneSpeaker = [...this.currentlySendingPhoneSpeakerSender].filter(playerId => !playersToPhoneSpeaker.has(playerId));
-            const playersNeedsReceivePhoneSpeaker = [...playersToPhoneSpeaker].filter(playerId => !this.currentlySendingPhoneSpeakerSender.has(playerId));
+        if ((this.useWhisper || this.phoneSpeakerBothDirections)
+            && (
+                (this.phoneSpeakerActive && this.inCall.size)
+                || ((!this.phoneSpeakerActive || !this.inCall.size) && (this.currentlySendingPhoneSpeakerSender.size || this.phoneSpeakerBothDirectionsPlayers.size))
+            )
+        ) {
+            if (this.useWhisper)
+            {
+                const playersToNotReceivePhoneSpeaker = [...this.currentlySendingPhoneSpeakerSender].filter(playerId => !playersToPhoneSpeaker.has(playerId));
+                const playersNeedsReceivePhoneSpeaker = [...playersToPhoneSpeaker].filter(playerId => !this.currentlySendingPhoneSpeakerSender.has(playerId));
+    
+                this.currentlySendingPhoneSpeakerSender = new Set(playersToPhoneSpeaker);
+    
+                if (playersToNotReceivePhoneSpeaker.length || playersNeedsReceivePhoneSpeaker.length) {
+                    alt.emitServerRaw("server:yaca:phoneSpeakerEmitWhisper", playersNeedsReceivePhoneSpeaker, playersToNotReceivePhoneSpeaker);
+                }
+            }
 
-            this.currentlySendingPhoneSpeakerSender = new Set(playersToPhoneSpeaker);
+            if (this.phoneSpeakerBothDirections)
+            {
+                const playersToNotReceivePhoneSpeaker = [...this.phoneSpeakerBothDirectionsPlayers].filter(playerId => !playersHearableOnPhoneSpeaker.has(playerId));
+                const playersNeedsReceivePhoneSpeaker = [...playersHearableOnPhoneSpeaker].filter(playerId => !this.phoneSpeakerBothDirectionsPlayers.has(playerId));
+    
+                this.phoneSpeakerBothDirectionsPlayers = new Set(playersHearableOnPhoneSpeaker);
 
-            if (playersToNotReceivePhoneSpeaker.length || playersNeedsReceivePhoneSpeaker.length) {
-                TriggerServer("server:yaca:phoneSpeakerEmit", playersNeedsReceivePhoneSpeaker, playersToNotReceivePhoneSpeaker);
+                if (playersToNotReceivePhoneSpeaker.length || playersNeedsReceivePhoneSpeaker.length) {
+                    alt.emitServerRaw("server:yaca:phoneSpeakerEmit", playersNeedsReceivePhoneSpeaker, playersToNotReceivePhoneSpeaker);
+                }
             }
         }
 
         this.currentlyPhoneSpeakerApplied.forEach((playerId) => {
             if (!playersOnPhoneSpeaker.has(playerId)) {
                 this.currentlyPhoneSpeakerApplied.delete(playerId);
-                YaCAClientModule.setPlayersCommType(this.getPlayerByID(playerId), YacaFilterEnum.PHONE_SPEAKER, false, undefined, settings.maxPhoneSpeakerRange, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
+                YaCAClientModule.setPlayersCommType(this.getPlayerByID(playerId), YacaFilterEnum.PHONE_SPEAKER, false, undefined, this.maxPhoneSpeakerRange, CommDeviceMode.RECEIVER, CommDeviceMode.SENDER);
             }
         });
 
