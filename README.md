@@ -39,6 +39,9 @@ using [yaca.systems](https://yaca.systems/) today!
 | MaxPhoneSpeakerRange                    | `number`   | The max range for the phone speaker in meters.  |
 
 # Shared Config
+
+| Variable                                | Type       | Description                                                                                                                                                                                                              |
+| --------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | UseWhisper                              | `boolean`  | Enable Whisper Functionality, if set to `false` it mutes and unmutes the players - suggested for 500 and more Players                                                                                                   |
 | PhoneSpeakerHearBothDirections          | `boolean`  | If set to true, the player can hear people which are near the person, who has enabled the phone speaker.  |
 
