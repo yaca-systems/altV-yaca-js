@@ -1309,7 +1309,7 @@ export class YaCAClientModule {
                 && this.inCall.size
                 && distanceToPlayer <= this.maxPhoneSpeakerRange
             ) {
-                if (this.phoneSpeakerBothDirections && !this.localPlayer.mutedOnPhone) {
+                if (this.phoneSpeakerBothDirections && !this.localPlayer.mutedOnPhone && distanceToPlayer <= voiceSetting.range) {
                     playersHearableOnPhoneSpeaker.add(player.remoteID);
                 }
 
