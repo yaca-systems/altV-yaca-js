@@ -164,6 +164,15 @@ export class YaCAClientModule {
     phoneSpeakerBothDirections = false;
     maxPhoneSpeakerRange = 5;
 
+    //Keybinds
+    keybinds = {
+        radio: "",
+        megaphone: "",
+        radioTalking: "",
+        voiceRangeUp: "",
+        voiceRangeDown: "",
+    };
+
     webview = null;
 
     mhinTimeout = null;
@@ -267,6 +276,17 @@ export class YaCAClientModule {
         this.muffling_range = config.MufflingRange ?? 2;
         this.phoneSpeakerBothDirections = sharedConfig.PhoneSpeakerHearBothDirections ?? false;
         this.maxPhoneSpeakerRange = config.MaxPhoneSpeakerRange ?? 5;
+
+
+        if (config.Keybinds) {
+            this.keybinds = {
+                radio: config.Keybinds.OPEN_RADIO ?? "",
+                megaphone: config.Keybinds.USE_MEGAPHONE ?? "",
+                radioTalking: config.Keybinds.STARTSTOP_RADIO_TALKING ?? "",
+                voiceRangeUp: config.Keybinds.HIGHER_VOICERANGE ?? "",
+                voiceRangeDown: config.Keybinds.LOWER_VOICERANGE ?? "",
+            }
+        }
 
         if (alt.Resource.getByName("yaca-ui")?.valid) {
             this.webview = new alt.WebView('http://assets/yaca-ui/assets/index.html');
@@ -626,16 +646,16 @@ export class YaCAClientModule {
         /* =========== alt:V Events =========== */
         alt.on("keydown", (key) => {
             switch (key) {
-                case 96: // Numpad 0
+                case this.keybinds.megaphone: // Numpad 0
                     this.useMegaphone(true);
                     break;
-                case 220: // Backslash
+                case this.keybinds.radioTalking: // Backslash
                     this.radioTalkingStart(true);
                     break;
-                case 107: // Numpad +
+                case this.keybinds.voiceRangeUp: // Numpad +
                     this.changeVoiceRange(1);
                     break;
-                case 80: // P
+                case this.keybinds.radio: // P
                     this.openRadio();
                     break;
             }
@@ -643,13 +663,13 @@ export class YaCAClientModule {
 
         alt.on("keyup", (key) => {
             switch (key) {
-                case 96: // Numpad 0
+                case this.keybinds.megaphone: // Numpad 0
                     this.useMegaphone(false);
                     break;
-                case 220: // Backslash
+                case this.keybinds.radioTalking: // Backslash
                     this.radioTalkingStart(false);
                     break;
-                case 109: // Numpad -
+                case this.keybinds.voiceRangeUp: // Numpad +
                     this.changeVoiceRange(-1);
                     break;
             }

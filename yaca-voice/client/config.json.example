@@ -17,6 +17,13 @@
     "ExcludedChannels": [],
     "UnmuteDelay": 400,
     "MufflingRange": 2,
+    "Keybinds": {
+        "USE_MEGAPHONE": 96,
+        "STARTSTOP_RADIO_TALKING": 220,
+        "HIGHER_VOICERANGE": 107,
+        "LOWER_VOICERANGE": 109,
+        "OPEN_RADIO": 80
+    },
     "MaxPhoneSpeakerRange": 5,
     "MaxDistanceToRadioTower": 5000,
     "RadioTowers": [

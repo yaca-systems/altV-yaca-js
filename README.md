@@ -37,6 +37,7 @@ using [yaca.systems](https://yaca.systems/) today!
 | MaxDistanceToRadioTower                 | `number`   | The max distance to the radio tower in meters. Used for the quality calculation of the radio.                                                                                                                  |
 | RadioTowers                             | `object[]` | The radio towers used for the quality calculation. If empty, the quality is always good. |
 | MaxPhoneSpeakerRange                    | `number`   | The max range for the phone speaker in meters.  |
+| Keybinds                                | `object`   | The keybinds for the plugin. If the value is a empty string, then keybind is not used. You can find the keycodes here https://www.toptal.com/developers/keycode/table  |
 
 # Shared Config
 
