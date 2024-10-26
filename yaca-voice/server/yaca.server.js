@@ -1,6 +1,6 @@
 import * as alt from 'alt-server';
-import config from '../server.config.json' assert { type: 'json' };
-import sharedConfig from '../shared.config.json' assert { type: 'json' };
+import config from '../server.config.json' with { type: 'json' };
+import sharedConfig from '../shared.config.json' with { type: 'json' };
 
 //For typescript users
 /*
