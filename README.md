@@ -54,6 +54,15 @@ using [yaca.systems](https://yaca.systems/) today!
 
 ### Radio
 
+#### `client:yaca:radioTalking`
+
+Start or stop talking on the radio.
+
+| Parameter | Type            | Description       |
+| --------- | --------------- | ----------------- |
+| state     | `boolean`       | Start or stop talking  |
+
+
 #### `client:yaca:canOpenRadio(state: boolean)`
 
 Enables or disables the radio for the player - default its allowed.

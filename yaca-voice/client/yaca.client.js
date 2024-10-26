@@ -453,6 +453,10 @@ export class YaCAClientModule {
             this.changeRadioStereoMode();
         });
 
+        alt.on("client:yaca:radioTalking", (state) => {
+            this.radioTalkingStart(state);
+        });
+
         alt.onServer("client:yaca:setRadioFreq", (channel, frequency) => {
             this.setRadioFrequency(channel, frequency);
         });
@@ -1574,9 +1578,8 @@ export class YaCAClientModule {
      * Starts the radio talking state.
      *
      * @param {boolean} state - The state of the radio talking.
-     * @param {boolean} [clearPedTasks=true] - Whether to clear ped tasks. Defaults to true if not provided.
      */
-    radioTalkingStart(state, clearPedTasks = true) {
+    radioTalkingStart(state) {
         if (!state) {
             if (this.radioTalking) {
                 if (this.radioTowerCalculation) {
@@ -1587,7 +1590,7 @@ export class YaCAClientModule {
                 this.radioTalking = false;
                 if (!this.useWhisper) this.radioTalkingStateToPlugin(false);
                 alt.emitServerRaw("server:yaca:radioTalking", false);
-                if (clearPedTasks) natives.stopAnimTask(this.localPlayer, "random@arrests", "generic_radio_chatter", 4);
+                natives.stopAnimTask(this.localPlayer, "random@arrests", "generic_radio_chatter", 4);
             }
 
             return;
