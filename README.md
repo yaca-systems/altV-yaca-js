@@ -52,6 +52,24 @@ using [yaca.systems](https://yaca.systems/) today!
 <details>
 <summary style="font-size: x-large">Client</summary>
 
+### General
+
+#### `client:yaca:useMegaphone(state: boolean)`
+
+Start or stop talking on the megaphone.
+
+| Parameter | Type            | Description       |
+| --------- | --------------- | ----------------- |
+| state     | `boolean`       | Start or stop talking  |
+
+#### `client:yaca:changeVoiceRange(higher: boolean)`
+
+Change the voice range of the player.
+
+| Parameter | Type            | Description       |
+| --------- | --------------- | ----------------- |
+| higher    | `boolean`       | true if the range should be increased, false if it should be decreased  |
+
 ### Radio
 
 #### `client:yaca:radioTalking(state: boolean)`
@@ -61,7 +79,6 @@ Start or stop talking on the radio.
 | Parameter | Type            | Description       |
 | --------- | --------------- | ----------------- |
 | state     | `boolean`       | Start or stop talking  |
-
 
 #### `client:yaca:canOpenRadio(state: boolean)`
 

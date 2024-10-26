@@ -402,8 +402,21 @@ export class YaCAClientModule {
             const player = this.getPlayerByID(target);
             if (player) player.forceMuted = muted;
         });
+        
+        /* =========== KEYBINDS =========== */
+        alt.on("client:yaca:useMegaphone", (state) => {
+            this.useMegaphone(state);
+        });
+
+        alt.on("client:yaca:changeVoiceRange", (higher) => {
+            this.changeVoiceRange(higher);
+        });
 
         /* =========== RADIO SYSTEM =========== */
+        alt.on("client:yaca:radioTalking", (state) => {
+            this.radioTalkingStart(state);
+        });
+
         alt.on("client:yaca:canOpenRadio", (state) => {
             this.canOpenRadio = state;
         })
@@ -451,10 +464,6 @@ export class YaCAClientModule {
         });
         this.webview?.on("client:yaca:changeRadioChannelStereo", () => {
             this.changeRadioStereoMode();
-        });
-
-        alt.on("client:yaca:radioTalking", (state) => {
-            this.radioTalkingStart(state);
         });
 
         alt.onServer("client:yaca:setRadioFreq", (channel, frequency) => {
