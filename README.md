@@ -54,7 +54,7 @@ using [yaca.systems](https://yaca.systems/) today!
 
 ### Radio
 
-#### `client:yaca:radioTalking`
+#### `client:yaca:radioTalking(state: boolean)`
 
 Start or stop talking on the radio.
 
