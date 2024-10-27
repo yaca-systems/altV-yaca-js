@@ -449,7 +449,7 @@ export class YaCAClientModule {
         alt.onServer("client:yaca:radioTalking", (target, frequency, state, infos, self = false, distanceToTowerFromSender = -1, senderPosition = new alt.Vector3.zero) => {
             if (!Array.isArray(target)) target = [target];
 
-            const ownDistanceToTargetOrTower= this.radioMode == "Direct" ? this.localPlayer.pos.distanceTo(senderPosition) :  this.getNearestTower()?.distance;
+            const ownDistanceToTargetOrTower = this.radioMode == "Direct" ? this.localPlayer.pos.distanceTo(senderPosition) :  this.getNearestTower()?.distance;
             if (self) {
                 if (state && ((this.radioMode == "Direct" && ownDistanceToTargetOrTower > this.maxDistanceToTower) || (this.radioMode == "Tower" && typeof ownDistanceToTargetOrTower == "undefined"))) target = [];
                 this.radioTalkingStateToPluginWithWhisper(state, target);
