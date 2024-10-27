@@ -252,7 +252,12 @@ export class YaCAClientModule {
         this.muffling_range = config.MufflingRange ?? 2;
         this.phoneSpeakerBothDirections = sharedConfig.PhoneSpeakerHearBothDirections ?? false;
         this.maxPhoneSpeakerRange = config.MaxPhoneSpeakerRange ?? 5;
+        
         this.radioMode = config.RadioMode ?? "Direct";
+        this.maxRadioDistance = config.MaxRadioDistance ?? 5000;
+        this.towers = config.RadioTowers?.map((tower) => {
+            return new alt.Vector3(tower.x, tower.y, tower.z)
+        }) ?? [];
 
         if (config.Keybinds) {
             this.keybinds = {
@@ -263,15 +268,10 @@ export class YaCAClientModule {
                 voiceRangeDown: config.Keybinds.LOWER_VOICERANGE ?? "",
             }
         }
-
+        
         if (alt.Resource.getByName("yaca-ui")?.valid) {
             this.webview = new alt.WebView('http://assets/yaca-ui/assets/index.html');
         }
-
-        this.towers = config.RadioTowers?.map((tower) => {
-            return new alt.Vector3(tower.x, tower.y, tower.z)
-        }) ?? [];
-        this.maxRadioDistance = config.MaxRadioDistance ?? 5000;
 
         this.registerEvents();
 
