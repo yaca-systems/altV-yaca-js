@@ -1,31 +1,6 @@
 import * as alt from 'alt-client';
 import * as natives from 'natives';
 
-
-//For typescript users
-/*
-declare module "alt-client" {
-    export interface LocalPlayer {
-        yacaPluginLocal: {
-            canChangeVoiceRange: boolean;
-
-            lastMegaphoneState: boolean;
-            canUseMegaphone: boolean;
-        }
-    }
-
-    export interface Player {
-        yacaPlugin: {
-            clientId: string,
-            forceMuted: boolean,
-            range: number,
-            phoneCallMemberIds?: number[],
-            isTalking: boolean,
-        }
-    }
-}
-*/
-
 const YacaFilterEnum = {
     "RADIO": "RADIO",
     "MEGAPHONE": "MEGAPHONE",
@@ -482,7 +457,7 @@ export class YaCAClientModule {
             }
 
             if (state && (
-                (this.radioMode == "Tower" && (typeof ownDistanceToTower == "undefined" || distanceToTowerFromSender == -1))
+                (this.radioMode == "Tower" && (typeof ownDistanceToTargetOrTower == "undefined" || distanceToTowerFromSender == -1))
                 || (this.radioMode == "Direct" && ownDistanceToTargetOrTower > this.maxDistanceToTower)
             )) return;
 
@@ -509,7 +484,7 @@ export class YaCAClientModule {
                     if (this.radioMode == "Tower")
                     {
                         errorLevel = Math.max(
-                            this.calculateSignalStrength(ownDistanceToTower),
+                            this.calculateSignalStrength(ownDistanceToTargetOrTower),
                             this.calculateSignalStrength(distanceToTowerFromSender)
                         )
                     }
