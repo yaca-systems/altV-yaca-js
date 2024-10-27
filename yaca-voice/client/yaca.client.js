@@ -163,6 +163,7 @@ export class YaCAClientModule {
     muffling_range = 2;
     phoneSpeakerBothDirections = false;
     maxPhoneSpeakerRange = 5;
+    radioMode = "Direct";
 
     //Keybinds
     keybinds = {
@@ -276,7 +277,7 @@ export class YaCAClientModule {
         this.muffling_range = config.MufflingRange ?? 2;
         this.phoneSpeakerBothDirections = sharedConfig.PhoneSpeakerHearBothDirections ?? false;
         this.maxPhoneSpeakerRange = config.MaxPhoneSpeakerRange ?? 5;
-
+        this.radioMode = config.RadioMode ?? "Direct";
 
         if (config.Keybinds) {
             this.keybinds = {
@@ -470,17 +471,20 @@ export class YaCAClientModule {
             this.setRadioFrequency(channel, frequency);
         });
 
-        alt.onServer("client:yaca:radioTalking", (target, frequency, state, infos, self = false, distanceToTowerFromSender = -1) => {
+        alt.onServer("client:yaca:radioTalking", (target, frequency, state, infos, self = false, distanceToTowerFromSender = -1, senderPosition = new alt.Vector3.zero) => {
             if (!Array.isArray(target)) target = [target];
 
-            const ownDistanceToTower = this.getNearestTower()?.distance;
+            const ownDistanceToTargetOrTower= this.radioMode == "Direct" ? this.localPlayer.pos.distanceTo(senderPosition) :  this.getNearestTower()?.distance;
             if (self) {
-                if (state && this.towers.length && !ownDistanceToTower) target = [];
+                if (state && ((this.radioMode == "Direct" && ownDistanceToTargetOrTower > this.maxDistanceToTower) || (this.radioMode == "Tower" && typeof ownDistanceToTargetOrTower == "undefined"))) target = [];
                 this.radioTalkingStateToPluginWithWhisper(state, target);
                 return;
             }
 
-            if (state && this.towers.length && (!ownDistanceToTower || distanceToTowerFromSender == -1)) return;
+            if (state && (
+                (this.radioMode == "Tower" && (typeof ownDistanceToTower == "undefined" || distanceToTowerFromSender == -1))
+                || (this.radioMode == "Direct" && ownDistanceToTargetOrTower > this.maxDistanceToTower)
+            )) return;
 
             const channel = this.findRadioChannelByFrequency(frequency);
             if (!channel) return;
@@ -498,12 +502,22 @@ export class YaCAClientModule {
             const info = infos[this.localPlayer.remoteID];
 
             if (!info?.shortRange || (info?.shortRange && alt.Player.getByRemoteID(target)?.isSpawned)) {
-                let errorLevel = state && this.towers.length ?
-                    Math.max(
-                        this.calculateSignalStrength(ownDistanceToTower),
-                        this.calculateSignalStrength(distanceToTowerFromSender)
-                    ) : undefined;
+                let errorLevel
 
+                if (state)
+                {
+                    if (this.radioMode == "Tower")
+                    {
+                        errorLevel = Math.max(
+                            this.calculateSignalStrength(ownDistanceToTower),
+                            this.calculateSignalStrength(distanceToTowerFromSender)
+                        )
+                    }
+                    else
+                    {
+                        errorLevel = this.calculateSignalStrength(ownDistanceToTargetOrTower);
+                    }
+                }
 
                 YaCAClientModule.setPlayersCommType(
                     targets,

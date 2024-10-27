@@ -38,6 +38,7 @@ using [yaca.systems](https://yaca.systems/) today!
 | RadioTowers                             | `object[]` | The radio towers used for the quality calculation. If empty, the quality is always good. |
 | MaxPhoneSpeakerRange                    | `number`   | The max range for the phone speaker in meters.  |
 | Keybinds                                | `object`   | The keybinds for the plugin. If the value is a empty string, then keybind is not used. You can find the keycodes here https://www.toptal.com/developers/keycode/table  |
+| RadioMode                               | `string`   | The default radio mode for the player. Can be "Direct" or "Tower". |
 
 # Shared Config
 

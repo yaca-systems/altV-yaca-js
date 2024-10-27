@@ -569,6 +569,7 @@ export class YaCAServerModule {
         if (!radioFrequency) return;
 
         const playerID = player.id;
+        const position = player.pos;
 
         const getPlayers = YaCAServerModule.radioFrequencyMap.get(radioFrequency);
         let targets = [];
@@ -602,7 +603,7 @@ export class YaCAServerModule {
             }
         }
 
-        if (targets.length) alt.emitClientRaw(targets, "client:yaca:radioTalking", player.id, radioFrequency, state, radioInfos, false, distanceToTowerFromSender);
+        if (targets.length) alt.emitClientRaw(targets, "client:yaca:radioTalking", player.id, radioFrequency, state, radioInfos, false, distanceToTowerFromSender, position);
         if (settings.USE_WHISPER) alt.emitClientRaw(player, "client:yaca:radioTalking", targetsToSender, radioFrequency, state, radioInfos, true)
     };
 
