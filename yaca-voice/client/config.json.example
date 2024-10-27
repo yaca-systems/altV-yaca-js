@@ -26,7 +26,7 @@
     },
     "MaxPhoneSpeakerRange": 5,
     "RadioMode": "Direct",
-    "MaxDistanceToRadioTower": 5000,
+    "MaxRadioDistance": 5000,
     "RadioTowers": [
         {
             "x": 552.8169,

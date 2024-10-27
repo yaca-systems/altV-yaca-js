@@ -119,7 +119,7 @@ export class YaCAClientModule {
     playersWithShortRange = new Map();
     playersInRadioChannel = new Map();
     towers = [];
-    maxDistanceToTower = 5000;
+    maxRadioDistance = 5000;
     radioTowerCalculation = null;
 
     inCall = new Set();
@@ -209,7 +209,7 @@ export class YaCAClientModule {
         return Math.max(min, Math.min(max, value))
     }
 
-    calculateSignalStrength(distance, maxDistance = this.maxDistanceToTower) {
+    calculateSignalStrength(distance, maxDistance = this.maxRadioDistance) {
         const ratio = distance / maxDistance;
         return this.clamp(Math.log10(1 + ratio * 8.5) / Math.log10(10), 0, 1);
     }
@@ -271,7 +271,7 @@ export class YaCAClientModule {
         this.towers = config.RadioTowers?.map((tower) => {
             return new alt.Vector3(tower.x, tower.y, tower.z)
         }) ?? [];
-        this.maxDistanceToTower = config.MaxDistanceToRadioTower ?? 5000;
+        this.maxRadioDistance = config.MaxRadioDistance ?? 5000;
 
         this.registerEvents();
 
@@ -451,14 +451,14 @@ export class YaCAClientModule {
 
             const ownDistanceToTargetOrTower = this.radioMode == "Direct" ? this.localPlayer.pos.distanceTo(senderPosition) :  this.getNearestTower()?.distance;
             if (self) {
-                if (state && ((this.radioMode == "Direct" && ownDistanceToTargetOrTower > this.maxDistanceToTower) || (this.radioMode == "Tower" && typeof ownDistanceToTargetOrTower == "undefined"))) target = [];
+                if (state && ((this.radioMode == "Direct" && ownDistanceToTargetOrTower > this.maxRadioDistance) || (this.radioMode == "Tower" && typeof ownDistanceToTargetOrTower == "undefined"))) target = [];
                 this.radioTalkingStateToPluginWithWhisper(state, target);
                 return;
             }
 
             if (state && (
                 (this.radioMode == "Tower" && (typeof ownDistanceToTargetOrTower == "undefined" || distanceToTowerFromSender == -1))
-                || (this.radioMode == "Direct" && ownDistanceToTargetOrTower > this.maxDistanceToTower)
+                || (this.radioMode == "Direct" && ownDistanceToTargetOrTower > this.maxRadioDistance)
             )) return;
 
             const channel = this.findRadioChannelByFrequency(frequency);
@@ -1432,7 +1432,7 @@ export class YaCAClientModule {
     
         for (const tower of this.towers) {
             const distance = this.localPlayer.pos.distanceTo(tower);
-            if (distance >= this.maxDistanceToTower) continue;
+            if (distance >= this.maxRadioDistance) continue;
     
             if (!nearestTower || distance < nearestTower.distance) {
                 nearestTower = {
