@@ -118,8 +118,6 @@ export class YaCAClientModule {
     activeRadioChannel = 1;
     playersWithShortRange = new Map();
     playersInRadioChannel = new Map();
-    towers = [];
-    maxRadioDistance = 5000;
     radioTowerCalculation = null;
 
     inCall = new Set();
@@ -139,6 +137,8 @@ export class YaCAClientModule {
     phoneSpeakerBothDirections = false;
     maxPhoneSpeakerRange = 5;
     radioMode = "Direct";
+    towers = [];
+    maxRadioDistance = 5000;
 
     //Keybinds
     keybinds = {
