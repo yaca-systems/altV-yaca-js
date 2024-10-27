@@ -477,7 +477,7 @@ export class YaCAClientModule {
             const info = infos[this.localPlayer.remoteID];
 
             if (!info?.shortRange || (info?.shortRange && alt.Player.getByRemoteID(target)?.isSpawned)) {
-                let errorLevel
+                let errorLevel;
 
                 if (state)
                 {
@@ -488,7 +488,7 @@ export class YaCAClientModule {
                             this.calculateSignalStrength(distanceToTowerFromSender)
                         )
                     }
-                    else
+                    else if (this.radioMode == "Direct")
                     {
                         errorLevel = this.calculateSignalStrength(ownDistanceToTargetOrTower);
                     }
