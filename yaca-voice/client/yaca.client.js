@@ -136,7 +136,7 @@ export class YaCAClientModule {
     muffling_range = 2;
     phoneSpeakerBothDirections = false;
     maxPhoneSpeakerRange = 5;
-    radioMode = "Direct";
+    radioMode = "Tower";
     towers = [];
     maxRadioDistance = 5000;
 
@@ -253,7 +253,7 @@ export class YaCAClientModule {
         this.phoneSpeakerBothDirections = sharedConfig.PhoneSpeakerHearBothDirections ?? false;
         this.maxPhoneSpeakerRange = config.MaxPhoneSpeakerRange ?? 5;
         
-        this.radioMode = config.RadioMode ?? "Direct";
+        this.radioMode = config.RadioMode ?? "Tower";
         this.maxRadioDistance = config.MaxRadioDistance ?? 5000;
         this.towers = config.RadioTowers?.map((tower) => {
             return new alt.Vector3(tower.x, tower.y, tower.z)
