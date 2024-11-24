@@ -2,40 +2,6 @@ import * as alt from 'alt-server';
 import config from '../server.config.json' with { type: 'json' };
 import sharedConfig from '../shared.config.json' with { type: 'json' };
 
-//For typescript users
-/*
-declare module "alt-server" {
-    export interface Colshape {
-        voiceRangeInfos: {
-            maxRange: number,
-        }
-    }
-
-    export interface Player {
-        voiceSettings: {
-            voiceRange: number,
-            voiceFirstConnect: boolean,
-            forceMuted: boolean,
-            ingameName: string,
-        };
-
-        voiceplugin: {
-            clientId: number,
-            forceMuted: boolean,
-            range: number,
-            playerId: number
-        }
-
-        radioSettings: {
-            activated: boolean,
-            currentChannel: number,
-            hasLong: boolean,
-            frequencies: { [key: number]: string }
-        };
-    }
-}
-*/
-
 const settings = {
     // Max Radio Channels
     maxRadioChannels: parseInt(config.YACA_MAX_RADIO_CHANNELS) || 9, // needs to be sync with client setting
@@ -569,6 +535,7 @@ export class YaCAServerModule {
         if (!radioFrequency) return;
 
         const playerID = player.id;
+        const position = player.pos;
 
         const getPlayers = YaCAServerModule.radioFrequencyMap.get(radioFrequency);
         let targets = [];
@@ -602,7 +569,7 @@ export class YaCAServerModule {
             }
         }
 
-        if (targets.length) alt.emitClientRaw(targets, "client:yaca:radioTalking", player.id, radioFrequency, state, radioInfos, false, distanceToTowerFromSender);
+        if (targets.length) alt.emitClientRaw(targets, "client:yaca:radioTalking", player.id, radioFrequency, state, radioInfos, false, distanceToTowerFromSender, position);
         if (settings.USE_WHISPER) alt.emitClientRaw(player, "client:yaca:radioTalking", targetsToSender, radioFrequency, state, radioInfos, true)
     };
 
