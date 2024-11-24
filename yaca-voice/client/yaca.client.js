@@ -682,7 +682,7 @@ export class YaCAClientModule {
                 case this.keybinds.radioTalking: // Backslash
                     this.radioTalkingStart(false);
                     break;
-                case this.keybinds.voiceRangeUp: // Numpad +
+                case this.keybinds.voiceRangeDown: // Numpad +
                     this.changeVoiceRange(-1);
                     break;
             }
