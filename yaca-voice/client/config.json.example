@@ -25,7 +25,7 @@
         "OPEN_RADIO": 80
     },
     "MaxPhoneSpeakerRange": 5,
-    "RadioMode": "Direct",
+    "RadioMode": "Tower",
     "MaxRadioDistance": 5000,
     "RadioTowers": [
         {
