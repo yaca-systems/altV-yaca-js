@@ -671,7 +671,7 @@ export class YaCAClientModule {
                 case this.keybinds.radioTalking: // Backslash
                     this.radioTalkingStart(false);
                     break;
-                case this.keybinds.voiceRangeUp: // Numpad +
+                case this.keybinds.voiceRangeDown: // Numpad +
                     this.changeVoiceRange(-1);
                     break;
             }
@@ -1331,7 +1331,7 @@ export class YaCAClientModule {
                 && this.inCall.size
                 && distanceToPlayer <= this.maxPhoneSpeakerRange
             ) {
-                if (this.phoneSpeakerBothDirections && !this.localPlayer.mutedOnPhone && distanceToPlayer <= voiceSetting.range) {
+                if (this.phoneSpeakerBothDirections && !this.localPlayer.mutedOnPhone && !voiceSetting.forceMuted && distanceToPlayer <= voiceSetting.range) {
                     playersHearableOnPhoneSpeaker.add(player.remoteID);
                 }
 
