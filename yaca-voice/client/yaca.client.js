@@ -407,6 +407,13 @@ export class YaCAClientModule {
             this.enableRadio(state);
         });
 
+        alt.on("client:yaca:setRadioActive", (state) => {
+            this.webview?.emit("webview:yaca:setRadioActive", state);
+        })
+        alt.onServer("client:yaca:setRadioActive", (state) => {
+            this.webview?.emit("webview:yaca:setRadioActive", state);
+        });
+
         alt.on("client:yaca:changeRadioFrequency", (frequency) => {
             this.changeRadioFrequency(frequency);
         });

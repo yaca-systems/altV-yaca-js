@@ -97,6 +97,14 @@ Enables or disables the radio for the player.
 | --------- | --------------- | ----------------- |
 | state     | `boolean`       | Change the state  |
 
+#### `client:yaca:setRadioActive(state: boolean)`
+
+Set the radio ui display active or inactive.
+
+| Parameter | Type            | Description       |
+| --------- | --------------- | ----------------- |
+| state     | `boolean`       | Change the state  |
+
 #### `client:yaca:changeRadioFrequency(frequency: string)`
 
 Change the radio frequency from the current radiochannel
