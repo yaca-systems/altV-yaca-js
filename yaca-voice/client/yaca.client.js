@@ -108,9 +108,7 @@ export class YaCAClientModule {
     firstConnect = true;
     isPlayerMuted = false;
 
-    canOpenRadio = true;
     radioFrequenceSetted = false;
-    radioToggle = false;
     radioEnabled = false;
     radioTalking = false;
     radioChannelSettings = {};
@@ -148,8 +146,6 @@ export class YaCAClientModule {
         voiceRangeUp: "",
         voiceRangeDown: "",
     };
-
-    webview = null;
 
     mhinTimeout = null;
     mhintTick = null;
@@ -267,10 +263,6 @@ export class YaCAClientModule {
                 voiceRangeUp: config.Keybinds.HIGHER_VOICERANGE ?? "",
                 voiceRangeDown: config.Keybinds.LOWER_VOICERANGE ?? "",
             }
-        }
-        
-        if (alt.Resource.getByName("yaca-ui")?.valid) {
-            this.webview = new alt.WebView('http://assets/yaca-ui/assets/index.html');
         }
 
         this.registerEvents();
@@ -393,59 +385,27 @@ export class YaCAClientModule {
             this.radioTalkingStart(state);
         });
 
-        alt.on("client:yaca:canOpenRadio", (state) => {
-            this.canOpenRadio = state;
-        })
-        alt.onServer("client:yaca:canOpenRadio", (state) => {
-            this.canOpenRadio = state;
-        });
-
         alt.on("client:yaca:enableRadio", (state) => {
             this.enableRadio(state);
         });
-        this.webview?.on("client:yaca:enableRadio", (state) => {
-            this.enableRadio(state);
-        });
-
-        alt.on("client:yaca:setRadioActive", (state) => {
-            this.webview?.emit("webview:yaca:setRadioActive", state);
-        })
-        alt.onServer("client:yaca:setRadioActive", (state) => {
-            this.webview?.emit("webview:yaca:setRadioActive", state);
-        });
 
         alt.on("client:yaca:changeRadioFrequency", (frequency) => {
-            this.changeRadioFrequency(frequency);
-        });
-        this.webview?.on('client:yaca:changeRadioFrequency', (frequency) => {
             this.changeRadioFrequency(frequency);
         });
 
         alt.on("client:yaca:muteRadioChannel", () => {
             this.muteRadioChannel();
         });
-        this.webview?.on('client:yaca:muteRadioChannel', () => {
-            this.muteRadioChannel();
-        });
 
         alt.on("client:yaca:changeActiveRadioChannel", (channel) => {
-            this.changeActiveRadioChannel(channel);
-        });
-        this.webview?.on('client:yaca:changeActiveRadioChannel', (channel) => {
             this.changeActiveRadioChannel(channel);
         });
 
         alt.on("client:yaca:changeRadioChannelVolume", (higher) => {
             this.changeRadioChannelVolume(higher);
         });
-        this.webview?.on('client:yaca:changeRadioChannelVolume', (higher) => {
-            this.changeRadioChannelVolume(higher);
-        });
 
         alt.on("client:yaca:changeRadioChannelStereo", () => {
-            this.changeRadioStereoMode();
-        });
-        this.webview?.on("client:yaca:changeRadioChannelStereo", () => {
             this.changeRadioStereoMode();
         });
 
@@ -665,7 +625,7 @@ export class YaCAClientModule {
                     this.changeVoiceRange(1);
                     break;
                 case this.keybinds.radio: // P
-                    this.openRadio();
+                    alt.emit("client:yaca:openradio");
                     break;
             }
         });
@@ -767,7 +727,6 @@ export class YaCAClientModule {
                 if (typeof value == "undefined") return;
 
                 if (isOwnPlayer) {
-                    if (!this.isPlayerMuted) this.webview?.emit('webview:hud:voiceDistance', value);
                     alt.emit("YACA:VOICE_RANGE_CHANGED", value);
                 }
                 this.setPlayerVariable(entity, "range", value);
@@ -1248,7 +1207,6 @@ export class YaCAClientModule {
             const states = JSON.parse(payload.message);
             this.isPlayerMuted = states.microphoneMuted || states.microphoneDisabled || states.soundMuted || states.soundDisabled;
 
-            this.webview?.emit('webview:hud:voiceDistance', this.isPlayerMuted ? 0 : voiceRangesEnum[this.uirange]);
             alt.emit("YACA:SOUND_STATE_CHANGED", payload.message);
         }
 
@@ -1275,7 +1233,6 @@ export class YaCAClientModule {
             if (this.isTalking != isTalking) {
                 this.isTalking = isTalking;
 
-                this.webview?.emit('webview:hud:isTalking', isTalking);
                 alt.emit("YACA:IS_PLAYER_TALKING", isTalking);
 
                 // TODO: Deprecated if alt:V syncs the playFacialAnim native
@@ -1453,31 +1410,6 @@ export class YaCAClientModule {
     }
 
     /* ======================== RADIO SYSTEM ======================== */
-    openRadio() {
-        if (!this.radioToggle && !alt.isCursorVisible() && this.canOpenRadio) {
-            this.radioToggle = true;
-            alt.showCursor(true);
-            alt.toggleGameControls(false);
-            this.webview?.emit('webview:yaca:openState', true);
-            this.webview?.focus();
-        } else if (this.radioToggle) {
-            this.closeRadio();
-        }
-    }
-
-    /**
-     * Cleanup different things, if player closes his radio.
-     */
-    closeRadio() {
-        if (!this.radioToggle) return;
-
-        this.radioToggle = false;
-
-        alt.showCursor(false);
-        alt.toggleGameControls(true);
-        this.webview?.emit('webview:yaca:openState', false);
-        this.webview?.unfocus();
-    }
 
     /**
      * Set volume & stereo mode for all radio channels on first start and reconnect.
@@ -1524,7 +1456,7 @@ export class YaCAClientModule {
     updateRadioInWebview(channel) {
         if (channel != this.activeRadioChannel) return;
 
-        this.webview?.emit("webview:yaca:setChannelData", this.radioChannelSettings[channel]);
+        alt.emit("client:yaca:setRadioChannelData", this.radioChannelSettings[channel]);
     }
 
     /**
