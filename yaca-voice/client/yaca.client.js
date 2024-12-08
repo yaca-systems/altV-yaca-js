@@ -58,15 +58,20 @@ const defaultRadioChannelSettings = {
 }
 
 // Values are in meters
-const voiceRangesEnum = {
-    1: 1,
-    2: 3,
-    3: 8,
-    4: 15,
-    5: 20,
-    6: 25,
-    7: 30,
-    8: 40,
+const DEFAULT_VOICE_RANGES = [
+    1,
+    3,
+    8,
+    15,
+    20,
+    25,
+    30,
+    40,
+];
+const DEFAULT_VOICE_RANGE_COLOR = {
+    r: 0,
+    g: 255,
+    b: 0 
 }
 
 const translations = {
@@ -102,8 +107,8 @@ export class YaCAClientModule {
     messageDisplayed = false;
     visualVoiceRangeTimeout = null;
     visualVoiceRangeTick = null;
-    uirange = 2;
-    lastuiRange = 2;
+    uirange = 1;
+    lastuiRange = 1;
     isTalking = false;
     firstConnect = true;
     isPlayerMuted = false;
@@ -137,6 +142,8 @@ export class YaCAClientModule {
     radioMode = "Tower";
     towers = [];
     maxRadioDistance = 5000;
+    voiceRangesEnum = DEFAULT_VOICE_RANGES;
+    voiceRangeColor = DEFAULT_VOICE_RANGE_COLOR;
 
     //Keybinds
     keybinds = {
@@ -254,6 +261,8 @@ export class YaCAClientModule {
         this.towers = config.RadioTowers?.map((tower) => {
             return new alt.Vector3(tower.x, tower.y, tower.z)
         }) ?? [];
+        this.voiceRangesEnum = config.VoiceRanges ?? DEFAULT_VOICE_RANGES;
+        this.voiceRangeColor = config.VoiceRangeColor ?? DEFAULT_VOICE_RANGE_COLOR
 
         if (config.Keybinds) {
             this.keybinds = {
@@ -1020,16 +1029,16 @@ export class YaCAClientModule {
 
         this.uirange += toggle;
 
-        if (this.uirange < 1) {
-            this.uirange = 1;
-        } else if (this.uirange > 8) {
-            this.uirange = 8;
+        if (this.uirange < 0) {
+            this.uirange = 0;
+        } else if (this.uirange >= this.voiceRangesEnum.length) {
+            this.uirange = this.voiceRangesEnum.length - 1;
         }
 
         if (this.lastuiRange == this.uirange) return false;
         this.lastuiRange = this.uirange;
 
-        const voiceRange = voiceRangesEnum[this.uirange] || 1;
+        const voiceRange = this.voiceRangesEnum[this.uirange] || 0;
 
         this.visualVoiceRangeTimeout = alt.setTimeout(() => {
             if (this.visualVoiceRangeTick) {
@@ -1042,7 +1051,7 @@ export class YaCAClientModule {
 
         this.visualVoiceRangeTick = alt.everyTick(() => {
             let pos = this.localPlayer.pos;
-            natives.drawMarker(1, pos.x, pos.y, pos.z - 0.98, 0, 0, 0, 0, 0, 0, (voiceRange * 2) - 1, (voiceRange * 2) - 1, 1, 0, 255, 0, 50, false, true, 2, true, null, null, false);
+            natives.drawMarker(1, pos.x, pos.y, pos.z - 0.98, 0, 0, 0, 0, 0, 0, (voiceRange * 2) - 1, (voiceRange * 2) - 1, 1, this.voiceRangeColor.r, this.voiceRangeColor.g, this.voiceRangeColor.b, 50, false, true, 2, true, null, null, false);
         });
 
         alt.emitServerRaw("server:yaca:changeVoiceRange", voiceRange);
