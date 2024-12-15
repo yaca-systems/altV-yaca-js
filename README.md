@@ -75,13 +75,14 @@ Change the voice range of the player.
 
 ### Radio
 
-#### `client:yaca:radioTalking(state: boolean)`
+#### `client:yaca:radioTalking(state: boolean, secondaryChannel: boolean)`
 
 Start or stop talking on the radio.
 
 | Parameter | Type            | Description       |
 | --------- | --------------- | ----------------- |
 | state     | `boolean`       | Start or stop talking  |
+| secondaryChannel | `boolean` | true if the secondary channel should be used, false if the primary channel should be used  |
 
 #### `client:yaca:canOpenRadio(state: boolean)`
 
@@ -126,6 +127,15 @@ Change the active radio channel to the given channel.
 | Parameter | Type            | Description       |
 | --------- | --------------- | ----------------- |
 | channel   | `number`        | The channel id    |
+
+#### `client:yaca:setSecondaryChannel(channel: number)`
+
+Change the secondary radio channel to the given channel.
+
+| Parameter | Type            | Description       |
+| --------- | --------------- | ----------------- |
+| channel   | `number`        | The channel id    |
+
 
 #### `client:yaca:changeRadioChannelVolume(higher: boolean)`
 
