@@ -422,7 +422,7 @@ export class YaCAClientModule {
             this.setRadioFrequency(channel, frequency);
         });
 
-        alt.onServer("client:yaca:radioTalking", (target, frequency, state, infos, self = false, distanceToTowerFromSender = -1, senderPosition = new alt.Vector3.zero) => {
+        alt.onServer("client:yaca:radioTalking", (target, frequency, state, infos, self = false, distanceToTowerFromSender = -1, senderPosition = alt.Vector3.zero) => {
             if (!Array.isArray(target)) target = [target];
 
             const ownDistanceToTargetOrTower = this.radioMode == "Direct" ? this.localPlayer.pos.distanceTo(senderPosition) :  this.getNearestTower()?.distance;
