@@ -68,11 +68,9 @@ export class YaCAServerModule {
     }
 
     /**
-     * Generate a random name and insert it into the database.
-     *
-     * @param {alt.Player} player - The player for whom to generate a random name.
+     * Generate a random name.
      */
-    generateRandomName(player) {
+    generateRandomName() {
         let name;
         for (let i = 0; i < 100; i++) {
             let generatedName = generateRandomString(15, "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789");
@@ -82,8 +80,6 @@ export class YaCAServerModule {
                 break;
             }
         }
-
-        if (!name && player.valid) player.sendMessage("Fehler bei der Teamspeaknamens findung, bitte reconnecte!");
 
         return name;
     }
@@ -97,7 +93,7 @@ export class YaCAServerModule {
         if (!player?.valid) return;
 
         const name = this.generateRandomName(player);
-        if (!name) return;
+        if (!name) return player.kick("Dein Name konnte nicht generiert werden!");
 
         player.voiceSettings = {
             voiceRange: 3,
@@ -435,8 +431,8 @@ export class YaCAServerModule {
      */
     changeRadioFrequency(player, channel, frequency) {
         if (!player?.valid) return;
-        if (!player.radioSettings.activated) return player.sendMessage("Das Funkgerät ist aus!");
-        if (isNaN(channel) || channel < 1 || channel > settings.maxRadioChannels) return player.sendMessage("Fehlerhafter Funk Kanal!");
+        if (!player.radioSettings.activated) return;
+        if (isNaN(channel) || channel < 1 || channel > settings.maxRadioChannels) return;
 
         // Leave radiochannel if frequency is 0
         if (frequency == "0") return YaCAServerModule.getInstance().leaveRadioFrequency(player, channel, frequency);
