@@ -39,6 +39,8 @@ using [yaca.systems](https://yaca.systems/) today!
 | RadioTowers                             | `object[]` | The radio towers used for the quality calculation. If empty, the quality is always good. |
 | MaxPhoneSpeakerRange                    | `number`   | The max range for the phone speaker in meters.  |
 | Keybinds                                | `object`   | The keybinds for the plugin. If the value is a empty string, then keybind is not used. You can find the keycodes here https://www.toptal.com/developers/keycode/table  |
+| VoiceRanges                             | `number[]` | Available voice ranges |
+| VoiceRangeColor                         | `object`   | RGB Color for the voice range marker |
 
 # Shared Config
 
@@ -73,13 +75,14 @@ Change the voice range of the player.
 
 ### Radio
 
-#### `client:yaca:radioTalking(state: boolean)`
+#### `client:yaca:radioTalking(state: boolean, secondaryChannel: boolean)`
 
 Start or stop talking on the radio.
 
 | Parameter | Type            | Description       |
 | --------- | --------------- | ----------------- |
 | state     | `boolean`       | Start or stop talking  |
+| secondaryChannel | `boolean` | true if the secondary channel should be used, false if the primary channel should be used  |
 
 #### `client:yaca:canOpenRadio(state: boolean)`
 
@@ -124,6 +127,15 @@ Change the active radio channel to the given channel.
 | Parameter | Type            | Description       |
 | --------- | --------------- | ----------------- |
 | channel   | `number`        | The channel id    |
+
+#### `client:yaca:setSecondaryChannel(channel: number)`
+
+Change the secondary radio channel to the given channel.
+
+| Parameter | Type            | Description       |
+| --------- | --------------- | ----------------- |
+| channel   | `number`        | The channel id    |
+
 
 #### `client:yaca:changeRadioChannelVolume(higher: boolean)`
 

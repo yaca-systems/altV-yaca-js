@@ -58,15 +58,20 @@ const defaultRadioChannelSettings = {
 }
 
 // Values are in meters
-const voiceRangesEnum = {
-    1: 1,
-    2: 3,
-    3: 8,
-    4: 15,
-    5: 20,
-    6: 25,
-    7: 30,
-    8: 40,
+const DEFAULT_VOICE_RANGES = [
+    1,
+    3,
+    8,
+    15,
+    20,
+    25,
+    30,
+    40,
+];
+const DEFAULT_VOICE_RANGE_COLOR = {
+    r: 0,
+    g: 255,
+    b: 0 
 }
 
 const translations = {
@@ -102,8 +107,8 @@ export class YaCAClientModule {
     messageDisplayed = false;
     visualVoiceRangeTimeout = null;
     visualVoiceRangeTick = null;
-    uirange = 2;
-    lastuiRange = 2;
+    uirange = 1;
+    lastuiRange = 1;
     isTalking = false;
     firstConnect = true;
     isPlayerMuted = false;
@@ -114,6 +119,7 @@ export class YaCAClientModule {
     radioChannelSettings = {};
     radioInited = false;
     activeRadioChannel = 1;
+    activeSecondaryChannel = -1;
     playersWithShortRange = new Map();
     playersInRadioChannel = new Map();
     radioTowerCalculation = null;
@@ -137,12 +143,15 @@ export class YaCAClientModule {
     radioMode = "Tower";
     towers = [];
     maxRadioDistance = 5000;
+    voiceRangesEnum = DEFAULT_VOICE_RANGES;
+    voiceRangeColor = DEFAULT_VOICE_RANGE_COLOR;
 
     //Keybinds
     keybinds = {
         radio: "",
         megaphone: "",
         radioTalking: "",
+        radioTalkingSecondary: "",
         voiceRangeUp: "",
         voiceRangeDown: "",
     };
@@ -254,12 +263,15 @@ export class YaCAClientModule {
         this.towers = config.RadioTowers?.map((tower) => {
             return new alt.Vector3(tower.x, tower.y, tower.z)
         }) ?? [];
+        this.voiceRangesEnum = config.VoiceRanges ?? DEFAULT_VOICE_RANGES;
+        this.voiceRangeColor = config.VoiceRangeColor ?? DEFAULT_VOICE_RANGE_COLOR
 
         if (config.Keybinds) {
             this.keybinds = {
                 radio: config.Keybinds.OPEN_RADIO ?? "",
                 megaphone: config.Keybinds.USE_MEGAPHONE ?? "",
                 radioTalking: config.Keybinds.STARTSTOP_RADIO_TALKING ?? "",
+                radioTalkingSecondary: config.Keybinds.STARTSTOP_RADIO_TALKING_SECONDARY ?? "",
                 voiceRangeUp: config.Keybinds.HIGHER_VOICERANGE ?? "",
                 voiceRangeDown: config.Keybinds.LOWER_VOICERANGE ?? "",
             }
@@ -381,8 +393,8 @@ export class YaCAClientModule {
         });
 
         /* =========== RADIO SYSTEM =========== */
-        alt.on("client:yaca:radioTalking", (state) => {
-            this.radioTalkingStart(state);
+        alt.on("client:yaca:radioTalking", (state, secondaryChannel = false) => {
+            this.radioTalkingStart(state, secondaryChannel);
         });
 
         alt.on("client:yaca:enableRadio", (state) => {
@@ -395,6 +407,20 @@ export class YaCAClientModule {
 
         alt.on("client:yaca:muteRadioChannel", () => {
             this.muteRadioChannel();
+        });
+
+        alt.on("client:yaca:setSecondaryChannel", (channel) => {
+            if (!this.isPluginInitialized() || !this.radioEnabled) return;
+
+            if (channel == this.activeSecondaryChannel) {
+                this.activeSecondaryChannel = -1;
+                this.radarNotification(`Sekundärer Channel wurde deaktiviert.`);
+            } else {
+                this.activeSecondaryChannel = channel;
+                this.radarNotification(`Kanal ${channel} ist nun als sekundärer Channel definiert.`)
+            }
+
+            alt.emitServerRaw('server:yaca:changeSecondaryRadioChannel', this.activeSecondaryChannel);
         });
 
         alt.on("client:yaca:changeActiveRadioChannel", (channel) => {
@@ -413,23 +439,23 @@ export class YaCAClientModule {
             this.setRadioFrequency(channel, frequency);
         });
 
-        alt.onServer("client:yaca:radioTalking", (target, frequency, state, infos, self = false, distanceToTowerFromSender = -1, senderPosition = new alt.Vector3.zero) => {
+        alt.onServer("client:yaca:radioTalking", (target, frequency, state, infos, self = false, distanceToTowerFromSender = -1, senderPosition = alt.Vector3.zero) => {
             if (!Array.isArray(target)) target = [target];
+            const channel = this.findRadioChannelByFrequency(frequency);
 
             const ownDistanceToTargetOrTower = this.radioMode == "Direct" ? this.localPlayer.pos.distanceTo(senderPosition) :  this.getNearestTower()?.distance;
             if (self) {
                 if (state && ((this.radioMode == "Direct" && ownDistanceToTargetOrTower > this.maxRadioDistance) || (this.radioMode == "Tower" && typeof ownDistanceToTargetOrTower == "undefined"))) target = [];
-                this.radioTalkingStateToPluginWithWhisper(state, target);
+                this.radioTalkingStateToPluginWithWhisper(state, target, channel == this.activeSecondaryChannel);
                 return;
             }
+
+            if (!channel) return;
 
             if (state && (
                 (this.radioMode == "Tower" && (typeof ownDistanceToTargetOrTower == "undefined" || distanceToTowerFromSender == -1))
                 || (this.radioMode == "Direct" && ownDistanceToTargetOrTower > this.maxRadioDistance)
             )) return;
-
-            const channel = this.findRadioChannelByFrequency(frequency);
-            if (!channel) return;
 
             const targets = [];
             target.forEach((targetID) => {
@@ -615,16 +641,20 @@ export class YaCAClientModule {
         /* =========== alt:V Events =========== */
         alt.on("keydown", (key) => {
             switch (key) {
-                case this.keybinds.megaphone: // Numpad 0
+                case this.keybinds.megaphone:
                     this.useMegaphone(true);
                     break;
-                case this.keybinds.radioTalking: // Backslash
+                case this.keybinds.radioTalking:
                     this.radioTalkingStart(true);
                     break;
-                case this.keybinds.voiceRangeUp: // Numpad +
+                case this.keybinds.radioTalkingSecondary:
+                    if (this.activeSecondaryChannel == -1) return;
+                    this.radioTalkingStart(true, true);
+                    break;
+                case this.keybinds.voiceRangeUp:
                     this.changeVoiceRange(1);
                     break;
-                case this.keybinds.radio: // P
+                case this.keybinds.radio:
                     alt.emit("client:yaca:openradio");
                     break;
             }
@@ -632,13 +662,16 @@ export class YaCAClientModule {
 
         alt.on("keyup", (key) => {
             switch (key) {
-                case this.keybinds.megaphone: // Numpad 0
+                case this.keybinds.megaphone:
                     this.useMegaphone(false);
                     break;
-                case this.keybinds.radioTalking: // Backslash
+                case this.keybinds.radioTalking:
                     this.radioTalkingStart(false);
                     break;
-                case this.keybinds.voiceRangeDown: // Numpad +
+                case this.keybinds.radioTalkingSecondary:
+                    this.radioTalkingStart(false, true);
+                    break;
+                case this.keybinds.voiceRangeDown:
                     this.changeVoiceRange(-1);
                     break;
             }
@@ -1020,16 +1053,16 @@ export class YaCAClientModule {
 
         this.uirange += toggle;
 
-        if (this.uirange < 1) {
-            this.uirange = 1;
-        } else if (this.uirange > 8) {
-            this.uirange = 8;
+        if (this.uirange < 0) {
+            this.uirange = 0;
+        } else if (this.uirange >= this.voiceRangesEnum.length) {
+            this.uirange = this.voiceRangesEnum.length - 1;
         }
 
         if (this.lastuiRange == this.uirange) return false;
         this.lastuiRange = this.uirange;
 
-        const voiceRange = voiceRangesEnum[this.uirange] || 1;
+        const voiceRange = this.voiceRangesEnum[this.uirange] || 0;
 
         this.visualVoiceRangeTimeout = alt.setTimeout(() => {
             if (this.visualVoiceRangeTick) {
@@ -1042,7 +1075,7 @@ export class YaCAClientModule {
 
         this.visualVoiceRangeTick = alt.everyTick(() => {
             let pos = this.localPlayer.pos;
-            natives.drawMarker(1, pos.x, pos.y, pos.z - 0.98, 0, 0, 0, 0, 0, 0, (voiceRange * 2) - 1, (voiceRange * 2) - 1, 1, 0, 255, 0, 50, false, true, 2, true, null, null, false);
+            natives.drawMarker(1, pos.x, pos.y, pos.z - 0.98, 0, 0, 0, 0, 0, 0, (voiceRange * 2) - 1, (voiceRange * 2) - 1, 1, this.voiceRangeColor.r, this.voiceRangeColor.g, this.voiceRangeColor.b, 50, false, true, 2, true, null, null, false);
         });
 
         alt.emitServerRaw("server:yaca:changeVoiceRange", voiceRange);
@@ -1432,11 +1465,16 @@ export class YaCAClientModule {
      *
      * @param {boolean} state - The state of the player talking on the radio.
      */
-    radioTalkingStateToPlugin(state) {
-        YaCAClientModule.setPlayersCommType(this.getPlayerByID(this.localPlayer.remoteID), YacaFilterEnum.RADIO, state, this.activeRadioChannel);
+    radioTalkingStateToPlugin(state, secondaryChannel = false) {
+        YaCAClientModule.setPlayersCommType(
+            this.getPlayerByID(this.localPlayer.remoteID),
+            YacaFilterEnum.RADIO,
+            state,
+            secondaryChannel ? this.activeSecondaryChannel : this.activeRadioChannel
+        );
     }
 
-    radioTalkingStateToPluginWithWhisper(state, targets) {
+    radioTalkingStateToPluginWithWhisper(state, targets, secondaryChannel = false) {
         let comDeviceTargets = [];
         for (const target of targets) {
             const player = this.getPlayerByID(target);
@@ -1445,7 +1483,15 @@ export class YaCAClientModule {
             comDeviceTargets.push(player);
         }
             
-        YaCAClientModule.setPlayersCommType(comDeviceTargets, YacaFilterEnum.RADIO, state, this.activeRadioChannel, undefined, CommDeviceMode.SENDER, CommDeviceMode.RECEIVER);
+        YaCAClientModule.setPlayersCommType(
+            comDeviceTargets, 
+            YacaFilterEnum.RADIO,
+            state,
+            secondaryChannel ? this.activeSecondaryChannel : this.activeRadioChannel,
+            undefined,
+            CommDeviceMode.SENDER,
+            CommDeviceMode.RECEIVER
+        );
     }
 
     /**
@@ -1516,7 +1562,7 @@ export class YaCAClientModule {
      *
      * @param {boolean} state - The state of the radio talking.
      */
-    radioTalkingStart(state) {
+    radioTalkingStart(state, secondaryChannel = false) {
         if (!state) {
             if (this.radioTalking) {
                 if (this.radioTowerCalculation) {
@@ -1525,8 +1571,8 @@ export class YaCAClientModule {
                 }
 
                 this.radioTalking = false;
-                if (!this.useWhisper) this.radioTalkingStateToPlugin(false);
-                alt.emitServerRaw("server:yaca:radioTalking", false);
+                if (!this.useWhisper) this.radioTalkingStateToPlugin(false, secondaryChannel);
+                alt.emitServerRaw("server:yaca:radioTalking", false, -1, secondaryChannel);
                 natives.stopAnimTask(this.localPlayer, "random@arrests", "generic_radio_chatter", 4);
             }
 
@@ -1536,25 +1582,25 @@ export class YaCAClientModule {
         if (!this.radioEnabled || !this.radioFrequenceSetted || this.radioTalking || this.localPlayer.isReloading) return;
 
         this.radioTalking = true;
-        if (!this.useWhisper) this.radioTalkingStateToPlugin(true);
+        if (!this.useWhisper) this.radioTalkingStateToPlugin(true, secondaryChannel);
 
         alt.Utils.requestAnimDict("random@arrests").then(() => {
             natives.taskPlayAnim(this.localPlayer, "random@arrests", "generic_radio_chatter", 3, -4, -1, 49, 0.0, false, false, false);
             
             if (this.radioTowerCalculation) clearInterval(this.radioTowerCalculation);
 
-            this.sendRadioRequestToServer();
+            this.sendRadioRequestToServer(secondaryChannel);
             this.radioTowerCalculation = setInterval(() => {
-                this.sendRadioRequestToServer();
+                this.sendRadioRequestToServer(secondaryChannel);
             }, 1000);
         });
     };
 
-    sendRadioRequestToServer() {
+    sendRadioRequestToServer(secondaryChannel = false) {
         if (!this.radioTalking || !this.radioEnabled || !this.radioFrequenceSetted) return;
 
         const distanceToTowerFromSender = this.getNearestTower()?.distance ?? -1;
-        alt.emitServerRaw("server:yaca:radioTalking", true, distanceToTowerFromSender);
+        alt.emitServerRaw("server:yaca:radioTalking", true, distanceToTowerFromSender, secondaryChannel);
     }
 
     enableRadio(state) {

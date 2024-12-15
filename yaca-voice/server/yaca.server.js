@@ -42,7 +42,6 @@ function generateRandomString(length = 50, possible = "ABCDEFGHIJKLMNOPQRSTUVWXY
 export class YaCAServerModule {
     static instance;
     static nameSet = new Set();
-    static voiceRangesColShapes = new Map();
 
     static radioFrequencyMap = new Map();
 
@@ -113,6 +112,7 @@ export class YaCAServerModule {
         player.radioSettings = {
             activated: false,
             currentChannel: 1,
+            secondaryChannel: -1,
             hasLong: false,
             frequencies: {} //{ [key: number]: string }
         };
@@ -169,13 +169,17 @@ export class YaCAServerModule {
         });
 
         //YaCA-Radio: Talk in radio channel
-        alt.onClient("server:yaca:radioTalking", (player, state, distanceToTowerFromSender = -1) => {
-            this.radioTalkingState(player, state, distanceToTowerFromSender)
+        alt.onClient("server:yaca:radioTalking", (player, state, distanceToTowerFromSender = -1, secondaryChannel = false) => {
+            this.radioTalkingState(player, state, distanceToTowerFromSender, secondaryChannel)
         });
 
         //YaCA-Radio: Change active radio channel
         alt.onClient("server:yaca:changeActiveRadioChannel", (player, channel) => {
             this.radioActiveChannelChange(player, channel)
+        });
+
+        alt.onClient("server:yaca:changeSecondaryRadioChannel", (player, channel) => {
+            this.radioActiveChannelChange(player, channel, true)
         });
 
         alt.onClient("server:yaca:phoneSpeakerEmitWhisper", (player, enableForTargets, disableForTargets) => {
@@ -515,10 +519,10 @@ export class YaCAServerModule {
      * @param {alt.Player} player - The player to change the active radio channel for.
      * @param {number} channel - The new active channel.
      */
-    radioActiveChannelChange(player, channel) {
+    radioActiveChannelChange(player, channel, secondaryChannel = false) {
         if (!player?.valid || isNaN(channel) || channel < 1 || channel > settings.maxRadioChannels) return;
 
-        player.radioSettings.currentChannel = channel;
+        player.radioSettings[secondaryChannel ? "secondaryChannel" : "currentChannel"] = channel;
     }
 
     /**
@@ -527,11 +531,11 @@ export class YaCAServerModule {
      * @param {alt.Player} player - The player to change the talking state for.
      * @param {boolean} state - The new talking state.
      */
-    radioTalkingState(player, state, distanceToTowerFromSender) {
+    radioTalkingState(player, state, distanceToTowerFromSender, secondaryChannel) {
         if (!player?.valid) return;
         if (!player.radioSettings.activated) return;
 
-        const radioFrequency = player.radioSettings.frequencies[player.radioSettings.currentChannel];
+        const radioFrequency = player.radioSettings.frequencies[secondaryChannel ? player.radioSettings.secondaryChannel : player.radioSettings.currentChannel];
         if (!radioFrequency) return;
 
         const playerID = player.id;
