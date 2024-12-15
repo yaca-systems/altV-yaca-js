@@ -42,7 +42,6 @@ function generateRandomString(length = 50, possible = "ABCDEFGHIJKLMNOPQRSTUVWXY
 export class YaCAServerModule {
     static instance;
     static nameSet = new Set();
-    static voiceRangesColShapes = new Map();
 
     static radioFrequencyMap = new Map();
 
