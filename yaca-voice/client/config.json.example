@@ -21,6 +21,7 @@
     "Keybinds": {
         "USE_MEGAPHONE": 96,
         "STARTSTOP_RADIO_TALKING": 220,
+        "STARTSTOP_RADIO_TALKING_SECONDARY": 84,
         "HIGHER_VOICERANGE": 107,
         "LOWER_VOICERANGE": 109,
         "OPEN_RADIO": 80
