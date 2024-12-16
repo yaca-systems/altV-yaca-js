@@ -327,7 +327,7 @@ export class YaCAClientModule {
                     alt.log('[YACA-Websocket]: connected');
                 });
 
-                this.websocket.perMessageDeflate = true;
+                this.websocket.perMessageDeflate = false;
                 this.websocket.autoReconnect = true;
                 this.websocket.start();
 
