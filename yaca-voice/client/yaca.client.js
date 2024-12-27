@@ -104,7 +104,6 @@ export class YaCAClientModule {
     monitorWebsocketInterval = null;
     websocket = null;
     noPluginActivated = 0;
-    messageDisplayed = false;
     visualVoiceRangeTimeout = null;
     visualVoiceRangeTick = null;
     uirange = 1;
@@ -155,53 +154,6 @@ export class YaCAClientModule {
         voiceRangeUp: "",
         voiceRangeDown: "",
     };
-
-    mhinTimeout = null;
-    mhintTick = null;
-    /**
-     * Displays a hint message.
-     *
-     * @param {string} head - The heading of the hint.
-     * @param {string} msg - The message to be displayed.
-     * @param {number} [time=0] - The duration for which the hint should be displayed. If not provided, defaults to 0.
-     */
-    mhint(head, msg, time = 0) {
-        const scaleform = natives.requestScaleformMovie("MIDSIZED_MESSAGE");
-
-        this.mhinTimeout = alt.setTimeout(() => {
-            this.mhinTimeout = null;
-
-            if (!natives.hasScaleformMovieLoaded(scaleform)) {
-                this.mhint(head, msg, time);
-                return;
-            }
-
-            natives.beginScaleformMovieMethod(scaleform, "SHOW_MIDSIZED_MESSAGE");
-            natives.beginTextCommandScaleformString("STRING");
-            natives.scaleformMovieMethodAddParamPlayerNameString(head);
-            natives.scaleformMovieMethodAddParamTextureNameString(msg);
-            natives.scaleformMovieMethodAddParamInt(100);
-            natives.scaleformMovieMethodAddParamBool(true);
-            natives.scaleformMovieMethodAddParamInt(100);
-            natives.endScaleformMovieMethod();
-
-            this.mhintTick = new alt.Utils.EveryTick(() => {
-                natives.drawScaleformMovieFullscreen(scaleform, 255, 255, 255, 255, 0);
-            });
-
-            if (time != 0) {
-                alt.setTimeout(() => {
-                    this.mhintTick?.destroy();
-                }, time * 1000);
-            }
-        }, natives.hasScaleformMovieLoaded(scaleform) ? 0 : 1000);
-    }
-
-    stopMhint() {
-        if (this.mhinTimeout) alt.clearTimeout(this.mhinTimeout);
-        this.mhinTimeout = null;
-        this.mhintTick?.destroy();
-    }
 
     /**
      * Clamps a value between a minimum and maximum value.
@@ -1203,21 +1155,9 @@ export class YaCAClientModule {
      * Monitoring if player is connected to teamspeak.
      */
     monitorConnectstate() {
-        if (this.websocket?.readyState == 0 || this.websocket?.readyState == 1) {
-            if (this.messageDisplayed && this.websocket.readyState == 1) {
-                this.stopMhint();
-                this.messageDisplayed = false;
-                this.noPluginActivated = 0;
-            }
-            return;
-        }
+        if (this.websocket?.readyState == 0 || this.websocket?.readyState == 1) return;
 
         this.noPluginActivated++;
-
-        if (!this.messageDisplayed) {
-            this.mhint("Voiceplugin", translations.plugin_not_activated);
-            this.messageDisplayed = true;
-        }
 
         if (this.noPluginActivated >= 120) alt.emitServerRaw("server:yaca:noVoicePlugin")
     }
