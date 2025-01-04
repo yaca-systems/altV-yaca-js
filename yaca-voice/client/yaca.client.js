@@ -271,7 +271,7 @@ export class YaCAClientModule {
                         this.initRequest(dataObj);
                         this.firstConnect = false;
                     } else {
-                        alt.emitServerRaw("server:yaca:wsReady", this.firstConnect);
+                        alt.emitServerRaw("server:yaca:wsReady");
                     }
 
                     alt.emit("YACA:CONNECTED_TO_WEBSOCKET");

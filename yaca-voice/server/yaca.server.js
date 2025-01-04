@@ -321,18 +321,9 @@ export class YaCAServerModule {
      * Used if a player reconnects to the server.
      *
      * @param {alt.Player} player - The player who reconnected.
-     * @param {boolean} isFirstConnect - Whether this is the player's first connection.
      */
-    playerReconnect(player, isFirstConnect) {
+    playerReconnect(player) {
         if (!player?.valid || !player.voiceSettings.voiceFirstConnect) return;
-
-        if (!isFirstConnect) {
-            const name = this.generateRandomName(player);
-            if (!name) return;
-
-            YaCAServerModule.nameSet.delete(player.voiceSettings?.ingameName);
-            player.voiceSettings.ingameName = name;
-        }
 
         this.connect(player);
     }
