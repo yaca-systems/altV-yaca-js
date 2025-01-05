@@ -143,9 +143,6 @@ export class YaCAServerModule {
         // YaCA: Change megaphone state by player
         alt.onClient("server:yaca:useMegaphone", this.playerUseMegaphone.bind(this));
 
-        // YaCA: Triggers if voiceplugin is for x amount of time not connected
-        alt.onClient("server:yaca:noVoicePlugin", this.playerNoVoicePlugin.bind(this));
-
         //YaCa: voice restart
         alt.onClient("server:yaca:wsReady", this.playerReconnect.bind(this));
 
@@ -306,15 +303,6 @@ export class YaCAServerModule {
         } else if (state && !player.hasStreamSyncedMeta("yaca:megaphoneactive")) {
             player.setStreamSyncedMeta("yaca:megaphoneactive", 30);
         }
-    }
-
-    /**
-     * Kick player if he doesn't have the voice plugin activated.
-     *
-     * @param {alt.Player} player - The player to check for the voice plugin.
-     */
-    playerNoVoicePlugin(player) {
-        if (player?.valid) player.kick("Dein Voiceplugin war nicht aktiviert!");
     }
 
     /**

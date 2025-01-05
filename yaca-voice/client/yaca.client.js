@@ -99,11 +99,9 @@ export class YaCAClientModule {
 
     localPlayer = alt.Player.local;
     rangeInterval = null;
-    monitorInterval = null;
     lastWebsocketHeartbeat = null;
     monitorWebsocketInterval = null;
     websocket = null;
-    noPluginActivated = 0;
     visualVoiceRangeTimeout = null;
     visualVoiceRangeTick = null;
     uirange = 1;
@@ -282,9 +280,6 @@ export class YaCAClientModule {
                 this.websocket.perMessageDeflate = false;
                 this.websocket.autoReconnect = true;
                 this.websocket.start();
-
-                // Monitoring if player is in ingame voice channel
-                this.monitorInterval = alt.setInterval(this.monitorConnectstate.bind(this), 1000);
             }
 
             if (this.firstConnect) return;
@@ -1150,17 +1145,6 @@ export class YaCAClientModule {
     }
 
     /* ======================== BASIC SYSTEM ======================== */
-
-    /**
-     * Monitoring if player is connected to teamspeak.
-     */
-    monitorConnectstate() {
-        if (this.websocket?.readyState == 0 || this.websocket?.readyState == 1) return;
-
-        this.noPluginActivated++;
-
-        if (this.noPluginActivated >= 120) alt.emitServerRaw("server:yaca:noVoicePlugin")
-    }
 
     monitorWebsocketConnection() {
         if (this.lastWebsocketHeartbeat != null && this.lastWebsocketHeartbeat + 4000 > Date.now()) return;
