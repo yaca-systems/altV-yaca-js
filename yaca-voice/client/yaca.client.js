@@ -1252,7 +1252,7 @@ export class YaCAClientModule {
                 && this.inCall.size
                 && distanceToPlayer <= this.maxPhoneSpeakerRange
             ) {
-                if (this.phoneSpeakerBothDirections && !this.localPlayer.mutedOnPhone && !voiceSetting.forceMuted && distanceToPlayer <= voiceSetting.range) {
+                if (this.phoneSpeakerBothDirections && !localData.mutedOnPhone && !voiceSetting.forceMuted && distanceToPlayer <= voiceSetting.range) {
                     playersHearableOnPhoneSpeaker.add(player.remoteID);
                 }
 
